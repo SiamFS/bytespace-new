@@ -1,1 +1,108 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens — values from the Figma style guide (Colors, Typography, Layout Grid).
+ * The default Tailwind palette is removed so only design colors can be used.
+ */
+@theme {
+  /* Colors */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-primary-50: #e7f6ff;
+  --color-primary-100: #d3eeff;
+  --color-primary-200: #b0ddff;
+  --color-primary-300: #81c5ff;
+  --color-primary-400: #4f9dff;
+  --color-primary-500: #2872ff;
+  --color-primary-600: #0445ff;
+  --color-primary-700: #0043ff;
+  --color-primary-800: #003be2;
+  --color-primary-900: #0b36a4;
+  --color-primary-950: #071e5f;
+
+  --color-secondary-50: #fdffe4;
+  --color-secondary-100: #faffc5;
+  --color-secondary-200: #f2ff92;
+  --color-secondary-300: #e4ff54;
+  --color-secondary-400: #d4fb20;
+  --color-secondary-500: #cbfc01;
+  --color-secondary-600: #8cb400;
+  --color-secondary-700: #6a8902;
+  --color-secondary-800: #546b09;
+  --color-secondary-900: #465a0d;
+  --color-secondary-950: #243300;
+
+  --color-neutral-50: #f5f5f6;
+  --color-neutral-100: #e5e6e8;
+  --color-neutral-200: #ced0d3;
+  --color-neutral-300: #abaeb5;
+  --color-neutral-400: #82868e;
+  --color-neutral-500: #666973;
+  --color-neutral-600: #585a62;
+  --color-neutral-700: #4b4c53;
+  --color-neutral-800: #424348;
+  --color-neutral-900: #3a3b3f;
+  --color-neutral-950: #242528;
+
+  /* Type scale — headings use Poppins SemiBold with -1% letter spacing */
+  --text-heading-l: 4.5rem; /* 72px */
+  --text-heading-l--line-height: 1.2;
+  --text-heading-l--letter-spacing: -0.01em;
+  --text-heading-l--font-weight: 600;
+
+  --text-heading-m: 2.75rem; /* 44px */
+  --text-heading-m--line-height: 1.2;
+  --text-heading-m--letter-spacing: -0.01em;
+  --text-heading-m--font-weight: 600;
+
+  --text-heading-s: 2.25rem; /* 36px */
+  --text-heading-s--line-height: 1.2;
+  --text-heading-s--letter-spacing: -0.01em;
+  --text-heading-s--font-weight: 600;
+
+  --text-heading-xs: 1.25rem; /* 20px */
+  --text-heading-xs--line-height: 1.2;
+  --text-heading-xs--letter-spacing: -0.01em;
+  --text-heading-xs--font-weight: 600;
+
+  /* Body — Satoshi Regular */
+  --text-body-l: 1.125rem; /* 18px */
+  --text-body-l--line-height: 1.6;
+  --text-body-m: 1rem; /* 16px */
+  --text-body-m--line-height: 1.6;
+  --text-body-s: 0.875rem; /* 14px */
+  --text-body-s--line-height: 1.6;
+  --text-body-xs: 0.75rem; /* 12px */
+  --text-body-xs--line-height: 1.6;
+
+  /* Labels — Satoshi Medium */
+  --text-label-l: 1.125rem; /* 18px */
+  --text-label-l--line-height: 1.2;
+  --text-label-l--font-weight: 500;
+  --text-label-m: 1rem; /* 16px */
+  --text-label-m--line-height: 1.2;
+  --text-label-m--font-weight: 500;
+  --text-label-s: 0.875rem; /* 14px */
+  --text-label-s--line-height: 1.2;
+  --text-label-s--font-weight: 500;
+  --text-label-xs: 0.75rem; /* 12px */
+  --text-label-xs--line-height: 1.2;
+  --text-label-xs--font-weight: 500;
+
+  /* Layout grid: 12 columns, 40px gutter, 120px margins at 1440px → 1200px content */
+  --container-content: 75rem; /* 1200px */
+}
+
+/* Font families come from next/font CSS variables (see src/app/fonts.ts) */
+@theme inline {
+  --font-sans: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white font-sans text-neutral-950;
+  }
+}

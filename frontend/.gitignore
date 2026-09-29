@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# self-hosted fonts fetched at build time (license forbids committing them)
+/src/app/fonts/*.woff2
