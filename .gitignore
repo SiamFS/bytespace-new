@@ -1,0 +1,10 @@
+# env files (secrets)
+.env*
+
+# AI assistant files (local only)
+.claude/
+CLAUDE.md
+AGENTS.md
+
+# Local reference docs (Next.js, React, Tailwind CSS, Express, etc.)
+.docs/
