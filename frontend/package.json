@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "npm run fonts && next dev",
+    "build": "npm run fonts && next build",
     "start": "next start",
     "lint": "eslint",
+    "fonts": "node scripts/fetch-fonts.mjs",
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
