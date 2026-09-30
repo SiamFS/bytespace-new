@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
-import { authErrorMessages } from "@/lib/auth/api";
+import { authErrorMessages, type User } from "@/lib/auth/api";
 import { safeNext } from "@/lib/auth/redirect";
+import { useSetSessionUser } from "@/lib/auth/useSession";
 
 /** After this long without an answer, explain that the free-tier server may be waking up. */
 export const SLOW_REQUEST_MS = 5000;
@@ -19,6 +20,7 @@ export function useAuthSubmit<Values extends FieldValues>(
   isSubmitting: boolean,
 ) {
   const router = useRouter();
+  const setSessionUser = useSetSessionUser();
   const [formError, setFormError] = useState<string>();
   const [slow, setSlow] = useState(false);
 
@@ -28,11 +30,12 @@ export function useAuthSubmit<Values extends FieldValues>(
     return () => clearTimeout(timer);
   }, [isSubmitting]);
 
-  async function run(request: () => Promise<unknown>) {
+  async function run(request: () => Promise<{ user: User }>) {
     setFormError(undefined);
     setSlow(false);
+    let user: User;
     try {
-      await request();
+      ({ user } = await request());
     } catch (error) {
       const messages = authErrorMessages<Path<Values>>(error, formType);
       for (const [field, message] of Object.entries(messages.fields ?? {})) {
@@ -41,9 +44,10 @@ export function useAuthSubmit<Values extends FieldValues>(
       setFormError(messages.form);
       return;
     }
+    // The navbar shows the user immediately — no extra /me request.
+    setSessionUser(user);
     // Read ?next= at submit time (not useSearchParams) so the page stays fully prerendered.
     router.replace(safeNext(new URLSearchParams(window.location.search).get("next")));
-    router.refresh();
   }
 
   // The hint only matters while a request is in flight.

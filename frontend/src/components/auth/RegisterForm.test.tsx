@@ -1,5 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "@/lib/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RegisterForm } from "./RegisterForm";
 
@@ -25,7 +26,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("RegisterForm", () => {
   it("uses the Figma placeholders and new-password autocomplete", () => {
-    render(<RegisterForm />);
+    renderWithProviders(<RegisterForm />);
     expect(screen.getByLabelText("Full Name")).toHaveAttribute("placeholder", "Jamie Davis");
     expect(screen.getByLabelText("Full Name")).toHaveAttribute("autocomplete", "name");
     expect(screen.getByLabelText("Password")).toHaveAttribute("autocomplete", "new-password");
@@ -33,7 +34,7 @@ describe("RegisterForm", () => {
 
   it("explains the password rules", async () => {
     vi.stubGlobal("fetch", vi.fn());
-    render(<RegisterForm />);
+    renderWithProviders(<RegisterForm />);
     await fill({ password: "short" });
     expect(await screen.findByText("Use at least 8 characters")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toHaveAccessibleDescription("Use at least 8 characters");
@@ -41,7 +42,7 @@ describe("RegisterForm", () => {
 
   it("rejects a whitespace-only name", async () => {
     vi.stubGlobal("fetch", vi.fn());
-    render(<RegisterForm />);
+    renderWithProviders(<RegisterForm />);
     await fill({ name: "   " });
     expect(await screen.findByText("Enter your full name")).toBeInTheDocument();
   });
@@ -49,7 +50,7 @@ describe("RegisterForm", () => {
   it("posts trimmed values and redirects on success", async () => {
     const fetchMock = vi.fn().mockResolvedValue(json(201, { user: { id: "1" } }));
     vi.stubGlobal("fetch", fetchMock);
-    render(<RegisterForm />);
+    renderWithProviders(<RegisterForm />);
 
     await fill({ name: "  Jamie Davis  ", email: "JAMIE@example.com " });
 
@@ -61,7 +62,7 @@ describe("RegisterForm", () => {
 
   it("puts 'email already exists' on the email field and focuses it", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(409, { error: { code: "CONFLICT", message: "x" } })));
-    render(<RegisterForm />);
+    renderWithProviders(<RegisterForm />);
     await fill();
 
     expect(await screen.findByText("An account with this email already exists.")).toBeInTheDocument();
@@ -76,7 +77,7 @@ describe("RegisterForm", () => {
         json(400, { error: { code: "VALIDATION_ERROR", message: "x", fields: { name: "Name not allowed" } } }),
       ),
     );
-    render(<RegisterForm />);
+    renderWithProviders(<RegisterForm />);
     await fill();
     expect(await screen.findByText("Name not allowed")).toBeInTheDocument();
   });

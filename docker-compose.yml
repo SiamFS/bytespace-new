@@ -1,10 +1,17 @@
 # Local development stack.
-#   docker compose up -d db        → only Postgres (run the API with `npm run dev` in backend/)
-#   docker compose up --build      → Postgres + the API container (production image)
-# Redis joins in the auth PR.
+#   docker compose up -d postgres redis  → Postgres + Redis (run the API with `npm run dev` in backend/)
+#   docker compose up --build            → Postgres + Redis + the backend container (production image)
+
+# Project name (defaults to the folder name). Shown in Docker Desktop and used to prefix
+# the network and volumes: bytespace_default, bytespace_postgres-data.
+name: bytespace
+
 services:
-  db:
+  postgres:
     image: postgres:17
+    # Fixed, readable names instead of <project>-<service>-1. Compose then can't run more than one
+    # container per service (Compose docs: container_name) — fine for local development.
+    container_name: bytespace-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: bytespace
@@ -14,7 +21,7 @@ services:
       # Host port 5433: 5432 is often taken by a locally installed PostgreSQL service.
       - "5433:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       # Creates the separate `bytespace_test` database used by the API tests (first start only).
       - ./backend/docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
     healthcheck:
@@ -23,20 +30,41 @@ services:
       timeout: 2s
       retries: 20
 
-  api:
+  # Rate-limit store (Upstash in production). Host port 6380 to avoid clashing with a local Redis.
+  redis:
+    image: redis:7-alpine
+    container_name: bytespace-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+  backend:
     build: ./backend
+    image: bytespace-backend
+    container_name: bytespace-backend
     ports:
       - "4000:4000"
     environment:
       NODE_ENV: production
       PORT: "4000"
-      DATABASE_URL: postgresql://bytespace:bytespace@db:5432/bytespace?schema=public
+      # Service names are the hostnames on the Compose network.
+      DATABASE_URL: postgresql://bytespace:bytespace@postgres:5432/bytespace?schema=public
+      REDIS_URL: redis://redis:6379
       CORS_ORIGINS: http://localhost:3000
       TRUST_PROXY: "0"
       LOG_LEVEL: info
+      # Local-only secret. Production sets a real one in the host's environment settings.
+      JWT_SECRET: local-compose-secret-change-me-32-plus-chars
     depends_on:
-      db:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:
-  db-data:
+  postgres-data:

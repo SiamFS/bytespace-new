@@ -1,5 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "@/lib/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginForm } from "./LoginForm";
 
@@ -26,7 +27,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("LoginForm", () => {
   it("has labelled email and password fields with the Figma placeholders", () => {
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     expect(screen.getByLabelText("Email")).toHaveAttribute("placeholder", "designer@example.com");
     expect(screen.getByLabelText("Email")).toHaveAttribute("autocomplete", "email");
     expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password");
@@ -36,7 +37,7 @@ describe("LoginForm", () => {
   it("shows errors, focuses the first invalid field and sends nothing when empty", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     await fillAndSubmit("", "");
 
@@ -47,7 +48,7 @@ describe("LoginForm", () => {
   });
 
   it("validates the email on blur", async () => {
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText("Email"), "not-an-email");
     await user.tab();
@@ -57,7 +58,7 @@ describe("LoginForm", () => {
   it("posts the normalised email and goes home on success", async () => {
     const fetchMock = vi.fn().mockResolvedValue(json(200, { user: { id: "1" } }));
     vi.stubGlobal("fetch", fetchMock);
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     await fillAndSubmit("  Jamie@Example.com ", "secret123");
 
@@ -68,16 +69,16 @@ describe("LoginForm", () => {
   });
 
   it("returns to a safe ?next= path, and ignores unsafe ones", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(200, { user: { id: "1" } })));
+    vi.stubGlobal("fetch", vi.fn(async () => json(200, { user: { id: "1" } })));
     window.history.replaceState(null, "", "/login?next=/courses");
-    const { unmount } = render(<LoginForm />);
+    const { unmount } = renderWithProviders(<LoginForm />);
     await fillAndSubmit("jamie@example.com", "secret123");
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/courses"));
     unmount();
 
     router.replace.mockReset();
     window.history.replaceState(null, "", "/login?next=//evil.example.com");
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     await fillAndSubmit("jamie@example.com", "secret123");
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
   });
@@ -87,7 +88,7 @@ describe("LoginForm", () => {
       "fetch",
       vi.fn().mockResolvedValue(json(401, { error: { code: "UNAUTHORIZED", message: "Invalid credentials" } })),
     );
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     await fillAndSubmit("jamie@example.com", "wrong-pass");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Invalid email or password.");
@@ -99,7 +100,7 @@ describe("LoginForm", () => {
       "fetch",
       vi.fn().mockResolvedValue(json(429, { error: { code: "RATE_LIMITED", message: "x" } }, { "Retry-After": "42" })),
     );
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     await fillAndSubmit("jamie@example.com", "secret123");
     expect(await screen.findByRole("alert")).toHaveTextContent("Too many attempts. Try again in 42 seconds.");
   });
@@ -107,7 +108,7 @@ describe("LoginForm", () => {
   it("disables the button and shows progress while signing in", async () => {
     let resolve!: (response: Response) => void;
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>((r) => (resolve = r))));
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     await fillAndSubmit("jamie@example.com", "secret123");
 
     const button = await screen.findByRole("button", { name: "Signing in…" });
@@ -119,9 +120,19 @@ describe("LoginForm", () => {
 
   it("shows a friendly message when the server can't be reached", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
     await fillAndSubmit("jamie@example.com", "secret123");
     expect(await screen.findByRole("alert")).toHaveTextContent("Can't reach the server.");
     expect(screen.getByRole("button", { name: "Sign In" })).toBeEnabled();
+  });
+});
+
+describe("LoginForm session", () => {
+  it("stores the signed-in user so the navbar updates without another request", async () => {
+    const user = { id: "1", name: "Jamie Davis", email: "jamie@example.com", createdAt: "2026-10-01T00:00:00.000Z" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(200, { user })));
+    const { queryClient } = renderWithProviders(<LoginForm />);
+    await fillAndSubmit("jamie@example.com", "secret123");
+    await waitFor(() => expect(queryClient.getQueryData(["session"])).toEqual({ user }));
   });
 });

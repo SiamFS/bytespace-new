@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { BagIcon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
-import { authNav, cartLink, mainNav } from "@/data/navigation";
+import { cartLink, mainNav } from "@/data/navigation";
+import { AuthNav } from "./AuthNav";
 import { MobileMenu } from "./MobileMenu";
 import { NavLinks } from "./NavLinks";
 
@@ -29,16 +30,7 @@ export function Navbar({ highlightHref }: { highlightHref?: string }) {
         </nav>
 
         <div className="hidden items-center justify-self-end gap-6 md:flex">
-          {authNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch={item.placeholder ? false : undefined}
-              className={`text-body-m leading-normal text-neutral-50 transition-opacity hover:opacity-80 ${linkFocus}`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          <AuthNav variant="bar" />
           <Link
             href={cartLink.href}
             prefetch={false}

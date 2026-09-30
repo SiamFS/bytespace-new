@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Providers } from "@/components/layout/Providers";
 import { poppins, satoshi } from "./fonts";
 import "./globals.css";
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${poppins.variable} ${satoshi.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
