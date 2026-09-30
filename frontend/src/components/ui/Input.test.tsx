@@ -27,3 +27,20 @@ describe("Input", () => {
     expect(screen.getByTestId("icon").parentElement).toHaveAttribute("aria-hidden", "true");
   });
 });
+
+describe("Input variants", () => {
+  it("uses the search pill by default", () => {
+    render(<Input label="Search" />);
+    const wrapper = screen.getByLabelText("Search").parentElement;
+    expect(wrapper).toHaveClass("rounded-3xl", "py-3");
+    expect(screen.getByLabelText("Search")).toHaveClass("text-body-l", "placeholder:text-neutral-400");
+  });
+
+  it("uses the bordered, fully rounded style for the outline variant", () => {
+    render(<Input label="Email" variant="outline" />);
+    const wrapper = screen.getByLabelText("Email").parentElement;
+    expect(wrapper).toHaveClass("rounded-full", "border", "border-neutral-200");
+    expect(wrapper).not.toHaveClass("rounded-3xl");
+    expect(screen.getByLabelText("Email")).toHaveClass("text-body-m", "placeholder:text-neutral-950");
+  });
+});
