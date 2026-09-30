@@ -26,6 +26,14 @@ describe("NavLinks", () => {
     expect(screen.getByRole("link", { name: "Courses" })).not.toHaveAttribute("aria-current");
   });
 
+  it("draws highlightHref as active without claiming aria-current", () => {
+    pathname.current = "/missing-page";
+    render(<NavLinks items={mainNav} highlightHref="/" />);
+    const home = screen.getByRole("link", { name: "Home" });
+    expect(home).toHaveClass("font-medium");
+    expect(home).not.toHaveAttribute("aria-current");
+  });
+
   it("follows the current route", () => {
     pathname.current = "/courses";
     render(<NavLinks items={mainNav} />);

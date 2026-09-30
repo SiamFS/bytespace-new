@@ -17,6 +17,15 @@ test.describe("home page", () => {
     expect(consoleErrors).toEqual([]);
   });
 
+  test("links the ByteSpace icons", async ({ page, request }) => {
+    await page.goto("/");
+    for (const rel of ["icon", "apple-touch-icon"]) {
+      const href = await page.locator(`link[rel="${rel}"]`).first().getAttribute("href");
+      expect(href).toBeTruthy();
+      expect((await request.get(href!)).status()).toBe(200);
+    }
+  });
+
   test("has no automatically detectable accessibility violations", async ({ page }) => {
     await page.goto("/");
 
