@@ -46,6 +46,11 @@
   --color-neutral-900: #3a3b3f;
   --color-neutral-950: #242528;
 
+  /* Off-palette colors used in the Home frame (not in the style guide) */
+  --color-ink: #040819; /* centered section titles */
+  --color-muted: #4f4f4f; /* course card meta text, testimonials */
+  --color-surface: #f6f6f6; /* frosted badges on course images */
+
   /* Type scale — headings use Poppins SemiBold with -1% letter spacing */
   --text-heading-l: 4.5rem; /* 72px */
   --text-heading-l--line-height: 1.2;
@@ -66,6 +71,22 @@
   --text-heading-xs--line-height: 1.2;
   --text-heading-xs--letter-spacing: -0.01em;
   --text-heading-xs--font-weight: 600;
+
+  /* Mobile heading sizes — our own responsive scale (Figma is desktop-only) */
+  --text-heading-l-mobile: 2.5rem; /* 40px */
+  --text-heading-l-mobile--line-height: 1.2;
+  --text-heading-l-mobile--letter-spacing: -0.01em;
+  --text-heading-l-mobile--font-weight: 600;
+
+  --text-heading-m-mobile: 1.75rem; /* 28px */
+  --text-heading-m-mobile--line-height: 1.2;
+  --text-heading-m-mobile--letter-spacing: -0.01em;
+  --text-heading-m-mobile--font-weight: 600;
+
+  --text-heading-s-mobile: 1.5rem; /* 24px */
+  --text-heading-s-mobile--line-height: 1.2;
+  --text-heading-s-mobile--letter-spacing: -0.01em;
+  --text-heading-s-mobile--font-weight: 600;
 
   /* Body — Satoshi Regular */
   --text-body-l: 1.125rem; /* 18px */
