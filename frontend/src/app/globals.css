@@ -50,6 +50,7 @@
   --color-ink: #040819; /* centered section titles */
   --color-muted: #4f4f4f; /* course card meta text, testimonials */
   --color-surface: #f6f6f6; /* frosted badges on course images */
+  --color-canvas: #fafafa; /* Growth + Testimonials section background */
 
   /* Type scale — headings use Poppins SemiBold with -1% letter spacing */
   --text-heading-l: 4.5rem; /* 72px */
@@ -97,6 +98,9 @@
   --text-body-s--line-height: 1.6;
   --text-body-xs: 0.75rem; /* 12px */
   --text-body-xs--line-height: 1.6;
+  /* 10px captions on stat cards ("July 1-28", "+12$") — not in the style guide */
+  --text-caption: 0.625rem; /* 10px */
+  --text-caption--line-height: 1.2;
 
   /* Labels — Satoshi Medium */
   --text-label-xl: 1.25rem; /* 20px — learning-path tiles; not in the style guide */
@@ -114,6 +118,12 @@
   --text-label-xs: 0.75rem; /* 12px */
   --text-label-xs--line-height: 1.2;
   --text-label-xs--font-weight: 500;
+
+  /* Small headings on stat cards ("$120.29") — Poppins SemiBold 24px, not in the style guide */
+  --text-heading-2xs: 1.5rem; /* 24px */
+  --text-heading-2xs--line-height: 1.33;
+  --text-heading-2xs--letter-spacing: -0.01em;
+  --text-heading-2xs--font-weight: 600;
 
   /* Big numbers on stat cards ("55%") — Poppins SemiBold 48px, not in the style guide */
   --text-stat: 3rem; /* 48px */
