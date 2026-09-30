@@ -42,3 +42,9 @@ next-env.d.ts
 
 # self-hosted fonts fetched at build time (license forbids committing them)
 /src/app/fonts/*.woff2
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
