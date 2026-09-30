@@ -35,5 +35,7 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: !isCI,
         timeout: 180 * 1000,
+        // Build and serve with images unoptimized (see next.config.ts).
+        env: { E2E: "1" },
       },
 });
