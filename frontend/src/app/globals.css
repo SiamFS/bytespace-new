@@ -112,8 +112,31 @@
   --text-label-xs--line-height: 1.2;
   --text-label-xs--font-weight: 500;
 
+  /* Big numbers on stat cards ("55%") — Poppins SemiBold 48px, not in the style guide */
+  --text-stat: 3rem; /* 48px */
+  --text-stat--line-height: 1.2;
+  --text-stat--letter-spacing: -0.01em;
+  --text-stat--font-weight: 600;
+
   /* Layout grid: 12 columns, 40px gutter, 120px margins at 1440px → 1200px content */
   --container-content: 75rem; /* 1200px */
+
+  /* Figma's 8-layer soft shadow on the cut-out photos (hero student, creator).
+     drop-shadow (not box-shadow) so it follows the transparent PNG outline. */
+  --drop-shadow-photo:
+    0.52px 0.74px 3.04px rgb(0 0 0 / 0.04), 2.23px 3.19px 5.72px rgb(0 0 0 / 0.06),
+    5.38px 7.69px 9.57px rgb(0 0 0 / 0.07), 10.21px 14.58px 16.09px rgb(0 0 0 / 0.08),
+    16.95px 24.21px 24px rgb(0 0 0 / 0.09), 25.84px 36.91px 36px rgb(0 0 0 / 0.1),
+    37.12px 53.03px 56px rgb(0 0 0 / 0.11), 51.04px 72.91px 72px rgb(0 0 0 / 0.13);
+}
+
+/* Blue-section grid (hero, CTA): 2px white lines every 120px at 12% opacity. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.12) 2px, transparent 2px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.12) 2px, transparent 2px);
+  background-size: 120px 120px;
+  background-position: -1px -1px;
 }
 
 /* Font families come from next/font CSS variables (see src/app/fonts.ts) */
@@ -124,6 +147,6 @@
 
 @layer base {
   body {
-    @apply bg-white font-sans text-neutral-950;
+    @apply relative bg-white font-sans text-neutral-950;
   }
 }

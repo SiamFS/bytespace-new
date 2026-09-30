@@ -1,8 +1,24 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import path from "node:path";
+import { defineConfig, type Plugin } from "vitest/config";
+
+// Next.js turns static image imports into { src, width, height } objects; Vite returns a
+// plain URL string, which makes next/image throw in tests. Mirror the Next.js shape.
+function staticImageStub(): Plugin {
+  return {
+    name: "static-image-stub",
+    enforce: "pre",
+    load(id) {
+      const file = id.split("?")[0];
+      if (/\.(png|jpe?g|webp|avif|gif|svg)$/.test(file)) {
+        return `export default { src: ${JSON.stringify("/" + path.basename(file))}, width: 100, height: 100 };`;
+      }
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [staticImageStub(), react()],
   resolve: {
     // Vite 8 resolves tsconfig `paths` (the `@/` alias) natively.
     tsconfigPaths: true,
