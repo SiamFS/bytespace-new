@@ -1,0 +1,26 @@
+// Prisma 7 with the `prisma-client` generator: plain TypeScript generated into src/ and
+// compiled with the app. ESM + ".js" import extensions to match tsconfig (NodeNext).
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  /// Stored lowercased; the service normalises before every read and write.
+  email        String   @unique
+  passwordHash String
+  /// Bumped to revoke every session of the user (checked on each authenticated request).
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
