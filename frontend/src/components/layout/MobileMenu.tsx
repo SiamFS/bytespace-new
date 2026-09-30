@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { CloseIcon, MenuIcon } from "@/components/ui/icons";
-import { authNav, mainNav } from "@/data/navigation";
-import { cn } from "@/lib/cn";
+import { mainNav } from "@/data/navigation";
+import { AuthNav } from "./AuthNav";
 import { NavLinks } from "./NavLinks";
 
 /** Hamburger menu for small screens (our own responsive design — Figma is desktop-only). */
@@ -44,21 +43,7 @@ export function MobileMenu() {
         <nav aria-label="Mobile">
           <NavLinks items={mainNav} onNavigate={close} className="flex flex-col gap-4" />
           <ul className="mt-6 flex flex-col gap-3 border-t border-white/20 pt-6">
-            {authNav.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  prefetch={item.placeholder ? false : undefined}
-                  onClick={close}
-                  className={cn(
-                    "text-body-m text-neutral-50",
-                    "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary-400",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+            <AuthNav variant="menu" asListItems onNavigate={close} />
           </ul>
         </nav>
       </div>

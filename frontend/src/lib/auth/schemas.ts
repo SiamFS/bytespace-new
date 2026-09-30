@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * Validation rules for the auth forms. The API (backend PR) validates with the same rules,
- * so a request that passes here never fails validation there.
+ * Validation rules for the auth forms. The API validates with the same rules
+ * (backend/src/schemas/auth.schema.ts); both run backend/test/fixtures/auth-validation-cases.json.
  */
 
 /** bcrypt only uses the first 72 bytes of a password (bcrypt README) — longer ones would be cut silently. */
@@ -22,7 +22,11 @@ const email = z
 export const loginSchema = z.object({
   email,
   // Login never reveals the password rules — just require something.
-  password: z.string().min(1, "Enter your password"),
+  password: z
+    .string()
+    .min(1, "Enter your password")
+    // Same cap as the API (nothing longer can match a bcrypt hash) — not a policy hint.
+    .refine((value) => utf8Bytes(value) <= 1024, { error: "Password is too long" }),
 });
 
 export const registerSchema = z.object({

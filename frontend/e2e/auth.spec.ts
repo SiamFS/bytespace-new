@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./test";
 import { makeAxeBuilder } from "./axe";
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) => ({

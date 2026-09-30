@@ -2,6 +2,7 @@ import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 import { prisma } from "./lib/prisma.js";
+import { closeRateLimitStore } from "./lib/rateLimitStore.js";
 
 const app = createApp();
 
@@ -27,7 +28,7 @@ function shutdown(signal: NodeJS.Signals) {
   }, 10_000).unref();
 
   server.close(async (error) => {
-    await prisma.$disconnect();
+    await Promise.all([prisma.$disconnect(), closeRateLimitStore()]);
     if (error) {
       logger.error({ err: error }, "Error while closing the server");
       process.exit(1);

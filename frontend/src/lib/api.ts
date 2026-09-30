@@ -77,3 +77,26 @@ export async function postJson<T>(path: string, body: unknown, timeoutMs = REQUE
   }
   return data as T;
 }
+
+export async function getJson<T>(path: string, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+      cache: "no-store",
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      throw new ApiError(0, "TIMEOUT", "The server took too long to respond.");
+    }
+    throw new ApiError(0, "NETWORK_ERROR", "Could not reach the server.");
+  }
+  const data: unknown = await response.json().catch(() => undefined);
+  if (!response.ok) {
+    const error = (data as ErrorBody | undefined)?.error;
+    throw new ApiError(response.status, error?.code ?? "UNKNOWN", error?.message ?? response.statusText);
+  }
+  return data as T;
+}

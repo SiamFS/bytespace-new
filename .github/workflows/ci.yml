@@ -81,9 +81,20 @@ jobs:
           --health-interval 5s
           --health-timeout 2s
           --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 20
     env:
       # API tests run against this real database (test/globalSetup.ts applies the migrations).
       DATABASE_URL: postgresql://bytespace:bytespace@localhost:5432/bytespace_test?schema=public
+      # Enables the Redis rate-limit store tests.
+      REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v6
 
@@ -110,3 +121,81 @@ jobs:
 
       - name: Docker image builds
         run: docker build -t bytespace-api .
+
+  fullstack:
+    name: Full stack (browser → Next.js → API → Postgres/Redis)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: bytespace
+          POSTGRES_PASSWORD: bytespace
+          POSTGRES_DB: bytespace
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bytespace -d bytespace"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 20
+    env:
+      # API
+      DATABASE_URL: postgresql://bytespace:bytespace@localhost:5432/bytespace?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-only-secret-at-least-32-characters-long
+      CORS_ORIGINS: http://localhost:3000
+      BCRYPT_ROUNDS: "4"
+      REGISTER_LIMIT_PER_HOUR: "100"
+      # Frontend: proxy /api to the API; E2E build; enable the @fullstack specs
+      API_URL: http://localhost:4000
+      E2E: "1"
+      FULLSTACK: "1"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Start the API
+        working-directory: backend
+        run: |
+          npm ci
+          npm run db:deploy
+          npm run build
+          nohup node dist/server.js > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4000/api/health && exit 0; sleep 1; done
+          cat api.log; exit 1
+
+      - name: Build the frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install Playwright browser
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Full-stack E2E
+        working-directory: frontend
+        run: npx playwright test --grep @fullstack --project=desktop
+
+      - name: API log
+        if: ${{ failure() }}
+        working-directory: backend
+        run: cat api.log

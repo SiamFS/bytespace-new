@@ -20,6 +20,14 @@ const EnvSchema = z.object({
     .pipe(z.array(origin).min(1)),
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
+  // Signs session JWTs (HS256). Generate with: openssl rand -base64 32
+  JWT_SECRET: z.string().min(32, "must be at least 32 characters (generate one with: openssl rand -base64 32)"),
+  // Rate-limit store. Optional: without it limits are kept in memory (fine for one instance).
+  REDIS_URL: z.url({ protocol: /^rediss?$/ }).optional(),
+  // bcrypt cost. 12 ≈ 250ms per hash on a small server; tests use 4 to stay fast.
+  BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
+  // Sign-ups allowed per IP per hour. Raised only for automated full-stack test runs.
+  REGISTER_LIMIT_PER_HOUR: z.coerce.number().int().min(1).default(5),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

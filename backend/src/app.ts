@@ -1,27 +1,38 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { env } from "./config/env.js";
+import { defaultRateLimits, type RateLimitRules } from "./config/rateLimits.js";
 import { logger } from "./lib/logger.js";
 import { prisma } from "./lib/prisma.js";
+import { getRateLimitStore } from "./lib/rateLimitStore.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
 import { createApiRouter } from "./routes/index.js";
+import { createAuthService, type AuthService } from "./services/auth.service.js";
 import { createHealthService, type HealthService } from "./services/health.service.js";
+import type { RateLimitStore } from "./services/rateLimit.store.js";
 
 /** Services the routes depend on — injectable so tests can swap in fakes. */
 export type AppDeps = {
   health: HealthService;
+  auth: AuthService;
+  rateLimitStore: RateLimitStore;
+  rateLimits: RateLimitRules;
 };
 
 const defaultDeps = (): AppDeps => ({
   health: createHealthService(prisma),
+  auth: createAuthService(prisma),
+  rateLimitStore: getRateLimitStore(),
+  rateLimits: defaultRateLimits,
 });
 
 /**
  * Builds the Express app without listening (server.ts listens; Supertest uses the app directly).
- * Middleware order matters: logging → security headers → CORS → body parsing → routes → 404 → errors.
+ * Middleware order matters: logging → security headers → CORS → body/cookie parsing → routes → 404 → errors.
  */
 export function createApp(overrides: Partial<AppDeps> = {}) {
   const deps: AppDeps = { ...defaultDeps(), ...overrides };
@@ -50,7 +61,14 @@ export function createApp(overrides: Partial<AppDeps> = {}) {
   // (same origin, no CORS needed) — this allow-list covers direct browser calls.
   app.use(cors({ origin: env.CORS_ORIGINS, credentials: true }));
   app.use(express.json({ limit: "10kb" }));
+  app.use(cookieParser());
 
+  // API responses are per-user and must never be cached — Vercel's CDN honours upstream
+  // Cache-Control on external rewrites, so a cached /api/auth/me could leak a session.
+  app.use("/api", (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  });
   app.use("/api", createApiRouter(deps));
 
   app.use(notFound);

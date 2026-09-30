@@ -1,0 +1,161 @@
+{
+  "$comment": "Shared by backend (test/authSchemaParity.test.ts) and frontend (src/lib/auth/schemaParity.test.ts). `errors` = first message per field; {} = valid. `output` = parsed value when valid.",
+  "register": [
+    {
+      "input": {
+        "name": "Jamie Davis",
+        "email": "jamie@example.com",
+        "password": "secret123"
+      },
+      "errors": {},
+      "output": {
+        "name": "Jamie Davis",
+        "email": "jamie@example.com",
+        "password": "secret123"
+      }
+    },
+    {
+      "input": {
+        "name": "  José Álvarez ",
+        "email": "  Jamie+Courses@Example.COM ",
+        "password": " pass word 1 "
+      },
+      "errors": {},
+      "output": {
+        "name": "José Álvarez",
+        "email": "jamie+courses@example.com",
+        "password": " pass word 1 "
+      }
+    },
+    {
+      "input": {
+        "name": "Anne-Marie O'Neil",
+        "email": "a@b.co",
+        "password": "abcdefg1"
+      },
+      "errors": {}
+    },
+    {
+      "input": {
+        "name": "",
+        "email": "",
+        "password": ""
+      },
+      "errors": {
+        "name": "Enter your full name",
+        "email": "Enter your email",
+        "password": "Use at least 8 characters"
+      }
+    },
+    {
+      "input": {
+        "name": "   ",
+        "email": "jamie@example.com",
+        "password": "secret123"
+      },
+      "errors": {
+        "name": "Enter your full name"
+      }
+    },
+    {
+      "input": {
+        "name": "Jamie 😀",
+        "email": "jamie@example.com",
+        "password": "secret123"
+      },
+      "errors": {
+        "name": "Use letters, spaces, apostrophes or hyphens only"
+      }
+    },
+    {
+      "input": {
+        "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "email": "jamie@example.com",
+        "password": "secret123"
+      },
+      "errors": {
+        "name": "Name is too long (60 characters max)"
+      }
+    },
+    {
+      "input": {
+        "name": "Jamie Davis",
+        "email": "jamie@",
+        "password": "secret123"
+      },
+      "errors": {
+        "email": "Enter a valid email address"
+      }
+    },
+    {
+      "input": {
+        "name": "Jamie Davis",
+        "email": "jamie@example.com",
+        "password": "onlyletters"
+      },
+      "errors": {
+        "password": "Include at least one letter and one number"
+      }
+    },
+    {
+      "input": {
+        "name": "Jamie Davis",
+        "email": "jamie@example.com",
+        "password": "12345678"
+      },
+      "errors": {
+        "password": "Include at least one letter and one number"
+      }
+    },
+    {
+      "input": {
+        "name": "Jamie Davis",
+        "email": "jamie@example.com",
+        "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀a1"
+      },
+      "errors": {
+        "password": "Password is too long"
+      }
+    },
+    {
+      "input": {
+        "name": "Jamie Davis",
+        "email": "jamie@example.com",
+        "password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1"
+      },
+      "errors": {}
+    }
+  ],
+  "login": [
+    {
+      "input": {
+        "email": " A@B.CO ",
+        "password": "x"
+      },
+      "errors": {},
+      "output": {
+        "email": "a@b.co",
+        "password": "x"
+      }
+    },
+    {
+      "input": {
+        "email": "",
+        "password": ""
+      },
+      "errors": {
+        "email": "Enter your email",
+        "password": "Enter your password"
+      }
+    },
+    {
+      "input": {
+        "email": "nope",
+        "password": "secret"
+      },
+      "errors": {
+        "email": "Enter a valid email address"
+      }
+    }
+  ]
+}

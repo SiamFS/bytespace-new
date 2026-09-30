@@ -1,10 +1,13 @@
-import { ApiError, postJson } from "@/lib/api";
+import { ApiError, getJson, postJson } from "@/lib/api";
 import type { LoginValues, RegisterValues } from "./schemas";
 
 export type User = { id: string; name: string; email: string; createdAt: string };
 
 export const login = (values: LoginValues) => postJson<{ user: User }>("/api/auth/login", values);
 export const register = (values: RegisterValues) => postJson<{ user: User }>("/api/auth/register", values);
+/** Current user, or null when signed out (the API answers 200 either way). */
+export const fetchSession = () => getJson<{ user: User | null }>("/api/auth/me");
+export const logout = () => postJson<void>("/api/auth/logout", {});
 
 export type FormErrors<Field extends string> = {
   /** Message shown above the submit button (role="alert"). */
