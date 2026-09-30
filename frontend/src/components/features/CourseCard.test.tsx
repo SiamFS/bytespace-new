@@ -30,4 +30,16 @@ describe("CourseCard", () => {
     expect(screen.getByText("out of 5")).toHaveClass("sr-only");
     expect(screen.getByText(/4\.5/)).toBeInTheDocument();
   });
+
+  it("growth variant uses the Growth section styles (taller lines, dark bubble)", () => {
+    render(<CourseCard course={course} variant="growth" />);
+    expect(screen.getByRole("heading", { level: 3 })).toHaveClass("leading-[1.4]");
+    expect(screen.getByText("17 Lessons")).toHaveClass("leading-5");
+    expect(screen.getByText("26+")).toHaveClass("bg-black", "text-white");
+  });
+
+  it("default variant keeps the lime bubble", () => {
+    render(<CourseCard course={course} />);
+    expect(screen.getByText("26+")).toHaveClass("bg-secondary-400");
+  });
 });

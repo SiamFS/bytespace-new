@@ -78,6 +78,15 @@ export function StarOutlinedIcon(props: IconProps) {
   );
 }
 
+/** Sharp lime star — rating on the Growth section's course card (Figma "Style=Outlined" variant, 20×20 in 24×24). */
+export function StarSharpIcon(props: IconProps) {
+  return (
+    <Icon viewBox="0 0 24 24" width={24} height={24} {...props}>
+      <path transform="translate(2 2)" d="M12.43 8L10 0L7.57 8L0 8L6.18 12.41L3.83 20L10 15.31L16.18 20L13.83 12.41L20 8L12.43 8Z" />
+    </Icon>
+  );
+}
+
 /** Signal bars — course level badge (Figma signal_cellular_alt, 20×20). */
 export function LevelIcon(props: IconProps) {
   return (
