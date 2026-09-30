@@ -1,4 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+const hero = (page: Page) => page.getByRole("region", { name: "Get Access to Hundreds Courses Available" });
 
 test.describe("hero", () => {
   test.beforeEach(async ({ page }) => {
@@ -19,22 +21,21 @@ test.describe("hero", () => {
   });
 
   test("student photo loads", async ({ page }) => {
-    const photo = page.getByAltText("Smiling student with headphones holding a laptop").locator("visible=true");
+    const photo = hero(page).getByAltText("Smiling student with headphones holding a laptop").locator("visible=true");
     await expect(photo).toBeVisible();
     expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
   });
 
   test("desktop: stat cards are shown", async ({ page, isMobile }) => {
     test.skip(isMobile, "desktop layout only");
-    await expect(page.getByRole("progressbar", { name: "Learning Progress" })).toBeVisible();
-    const hero = page.getByRole("region", { name: "Get Access to Hundreds Courses Available" });
-    await expect(hero.getByText("UI/UX Design")).toBeVisible();
-    await expect(page.getByText("Happy Students")).toBeVisible();
+    await expect(hero(page).getByRole("progressbar", { name: "Learning Progress" })).toBeVisible();
+    await expect(hero(page).getByText("UI/UX Design")).toBeVisible();
+    await expect(hero(page).getByText("Happy Students")).toBeVisible();
   });
 
   test("mobile: decorative stage is hidden and nothing overflows", async ({ page, isMobile }) => {
     test.skip(!isMobile, "mobile layout only");
-    await expect(page.getByRole("progressbar", { name: "Learning Progress" })).toBeHidden();
+    await expect(hero(page).getByRole("progressbar", { name: "Learning Progress" })).toBeHidden();
     const [scrollWidth, innerWidth] = await page.evaluate(() => [
       document.documentElement.scrollWidth,
       window.innerWidth,

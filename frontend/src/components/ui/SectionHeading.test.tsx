@@ -28,3 +28,17 @@ describe("SectionHeading options", () => {
     expect(screen.getByRole("heading", { level: 2 })).toHaveClass("max-w-[588px]");
   });
 });
+
+describe("SectionHeading tones and spacing", () => {
+  it("uses the neutral tone for left-aligned feature headings", () => {
+    render(<SectionHeading title="Title" description="Text" tone="neutral" />);
+    expect(screen.getByRole("heading")).toHaveClass("text-neutral-950");
+    expect(screen.getByText("Text")).toHaveClass("text-neutral-700");
+  });
+
+  it("uses a 40px gap with spacing lg", () => {
+    const { container } = render(<SectionHeading title="Title" spacing="lg" />);
+    expect(container.firstElementChild).toHaveClass("gap-10");
+    expect(container.firstElementChild).not.toHaveClass("gap-4");
+  });
+});
