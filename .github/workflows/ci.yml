@@ -60,3 +60,53 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 14
+
+  backend:
+    name: Backend (lint, types, tests, build, docker)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: bytespace
+          POSTGRES_PASSWORD: bytespace
+          POSTGRES_DB: bytespace_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bytespace -d bytespace_test"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 20
+    env:
+      # API tests run against this real database (test/globalSetup.ts applies the migrations).
+      DATABASE_URL: postgresql://bytespace:bytespace@localhost:5432/bytespace_test?schema=public
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies (also generates Prisma Client)
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit + API tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Docker image builds
+        run: docker build -t bytespace-api .
