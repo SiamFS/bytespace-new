@@ -18,6 +18,9 @@ jobs:
   frontend:
     name: Frontend (lint, types, unit, build, e2e)
     runs-on: ubuntu-latest
+    env:
+      # Build and serve with images unoptimized for E2E (see frontend/next.config.ts).
+      E2E: "1"
     defaults:
       run:
         working-directory: frontend
