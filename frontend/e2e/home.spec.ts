@@ -13,6 +13,7 @@ test.describe("home page", () => {
     expect(response?.status()).toBe(200);
     await expect(page).toHaveTitle(/ByteSpace/);
     await expect(page.getByRole("main")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(consoleErrors).toEqual([]);
   });
 

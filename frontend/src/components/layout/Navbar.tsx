@@ -12,11 +12,12 @@ const linkFocus =
 /**
  * Site header for blue backgrounds (hero, 404). Figma: 120px tall, logo left,
  * Home / Courses / Creators centered, Sign In / Join Us / cart on the right.
- * Transparent — the section behind it provides the background.
+ * Transparent and absolutely positioned over the first section, which provides the
+ * blue background (it stays outside <main> so it keeps the "banner" landmark role).
  */
 export function Navbar() {
   return (
-    <header className="relative z-10">
+    <header className="absolute inset-x-0 top-0 z-30">
       <Container className="relative flex h-20 items-center justify-between md:grid md:h-[120px] md:grid-cols-[1fr_auto_1fr]">
         <Link href="/" aria-label="ByteSpace home" className={`justify-self-start text-neutral-50 ${linkFocus}`}>
           <Logo className="h-7 w-auto md:h-[35px]" />
