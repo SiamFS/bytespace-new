@@ -27,7 +27,8 @@ test.describe("hero", () => {
   test("desktop: stat cards are shown", async ({ page, isMobile }) => {
     test.skip(isMobile, "desktop layout only");
     await expect(page.getByRole("progressbar", { name: "Learning Progress" })).toBeVisible();
-    await expect(page.getByText("UI/UX Design")).toBeVisible();
+    const hero = page.getByRole("region", { name: "Get Access to Hundreds Courses Available" });
+    await expect(hero.getByText("UI/UX Design")).toBeVisible();
     await expect(page.getByText("Happy Students")).toBeVisible();
   });
 

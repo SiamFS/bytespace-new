@@ -99,6 +99,9 @@
   --text-body-xs--line-height: 1.6;
 
   /* Labels — Satoshi Medium */
+  --text-label-xl: 1.25rem; /* 20px — learning-path tiles; not in the style guide */
+  --text-label-xl--line-height: 1.2;
+  --text-label-xl--font-weight: 500;
   --text-label-l: 1.125rem; /* 18px */
   --text-label-l--line-height: 1.2;
   --text-label-l--font-weight: 500;

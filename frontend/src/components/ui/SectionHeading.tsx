@@ -17,7 +17,11 @@ type SectionHeadingProps = {
   size?: keyof typeof sizes;
   tone?: keyof typeof tones;
   align?: "center" | "left";
+  /** id for the h2, so the section can use aria-labelledby. */
+  id?: string;
   className?: string;
+  /** Layout-only classes for the title (e.g. a max width to match Figma line breaks). */
+  titleClassName?: string;
 };
 
 /** Section title (h2) with an optional supporting paragraph. */
@@ -27,7 +31,9 @@ export function SectionHeading({
   size = "m",
   tone = "dark",
   align = "center",
+  id,
   className,
+  titleClassName,
 }: SectionHeadingProps) {
   return (
     <div
@@ -37,7 +43,9 @@ export function SectionHeading({
         className,
       )}
     >
-      <h2 className={cn("font-heading", sizes[size], tones[tone].title)}>{title}</h2>
+      <h2 id={id} className={cn("font-heading", sizes[size], tones[tone].title, titleClassName)}>
+        {title}
+      </h2>
       {description && (
         <p className={cn("text-body-m md:text-body-l", tones[tone].description)}>
           {description}
