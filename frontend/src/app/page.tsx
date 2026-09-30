@@ -6,6 +6,7 @@ import { GrowthSection } from "@/components/sections/GrowthSection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { LearningPathsSection } from "@/components/sections/LearningPathsSection";
 import { PartnerLogos } from "@/components/sections/PartnerLogos";
+import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         <LearningPathsSection />
         <GrowthSection />
         <CtaSection />
+        <TestimonialsSection />
       </main>
       <Footer />
     </>

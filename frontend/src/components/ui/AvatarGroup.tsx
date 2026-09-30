@@ -13,16 +13,23 @@ const sizes = {
   md: { box: "size-[43px]", px: 43, overlap: "-ml-4", more: "font-bold leading-normal" },
 };
 
+const moreTones = {
+  lime: "bg-secondary-400 text-neutral-950",
+  // Growth section course card: black bubble, white text
+  dark: "bg-black text-white",
+};
+
 type AvatarGroupProps = {
   avatars: Avatar[];
-  /** Text for the trailing lime bubble, e.g. "2K+". */
+  /** Text for the trailing bubble, e.g. "2K+". */
   more?: string;
+  moreTone?: keyof typeof moreTones;
   size?: keyof typeof sizes;
   className?: string;
 };
 
 /** Row of overlapping circular avatars with an optional "+N" bubble. */
-export function AvatarGroup({ avatars, more, size = "md", className }: AvatarGroupProps) {
+export function AvatarGroup({ avatars, more, moreTone = "lime", size = "md", className }: AvatarGroupProps) {
   const s = sizes[size];
 
   return (
@@ -43,7 +50,8 @@ export function AvatarGroup({ avatars, more, size = "md", className }: AvatarGro
             s.box,
             avatars.length > 0 && s.overlap,
             s.more,
-            "flex items-center justify-center rounded-full bg-secondary-400 text-body-xs text-neutral-950",
+            "flex items-center justify-center rounded-full text-body-xs",
+            moreTones[moreTone],
           )}
         >
           {more}

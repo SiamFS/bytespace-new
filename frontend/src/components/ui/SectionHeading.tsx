@@ -17,6 +17,8 @@ const tones = {
   // Left-aligned feature headings (Growth, Create & Manage)
   neutral: { title: "text-neutral-950", description: "text-neutral-700" },
   light: { title: "text-neutral-50", description: "text-neutral-50" },
+  // Testimonials: pure black title, #4f4f4f text
+  black: { title: "text-black", description: "text-muted" },
 };
 
 type SectionHeadingProps = {

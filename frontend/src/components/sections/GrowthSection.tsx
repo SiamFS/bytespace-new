@@ -73,7 +73,7 @@ export function GrowthSection() {
 
           <PhotoOnMobile src={heroStudent} alt={photoAlt.student} />
           <div className="relative hidden h-[552px] w-[621px] shrink-0 lg:block">
-            <CourseCard course={courses[0]} className="absolute top-0 left-0 w-[373px]" />
+            <CourseCard course={courses[0]} variant="growth" className="absolute top-0 left-0 w-[373px]" />
             <Image
               src={heroStudent}
               alt={photoAlt.student}
