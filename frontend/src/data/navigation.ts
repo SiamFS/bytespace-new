@@ -16,8 +16,8 @@ export const mainNav: NavItem[] = [
 ];
 
 export const authNav: NavItem[] = [
-  { label: "Sign In", href: "/login", placeholder: true },
-  { label: "Join Us", href: "/register", placeholder: true },
+  { label: "Sign In", href: "/login" },
+  { label: "Join Us", href: "/register" },
 ];
 
 export const cartLink: NavItem = { label: "Cart", href: "/cart", placeholder: true };
