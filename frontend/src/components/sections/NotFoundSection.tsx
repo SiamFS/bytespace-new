@@ -20,7 +20,9 @@ export function NotFoundSection() {
           <h1 id="not-found-title" className="font-heading text-heading-l-mobile text-white md:text-heading-l">
             The page you are looking for doesn’t exist
           </h1>
-          <p className="max-w-[486px] text-body-l text-neutral-100">
+          {/* One line on desktop, as in Figma: its box is exactly 486px, and Linux renders Satoshi
+              a hair wider, so a max-width alone wraps the last word. */}
+          <p className="max-w-[486px] text-body-l text-neutral-100 lg:max-w-none lg:whitespace-nowrap">
             Try to use a correct url or go back to homepage to start again
           </p>
           <Button href="/">Back to Home</Button>

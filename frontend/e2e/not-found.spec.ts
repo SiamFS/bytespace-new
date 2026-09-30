@@ -24,12 +24,15 @@ test.describe("404 page", () => {
   test("desktop: matches the Figma frame layout", async ({ page, isMobile }) => {
     test.skip(isMobile, "desktop layout only");
     await page.goto(missing);
+    await page.evaluate(() => document.fonts.ready);
     const box = async (locator: ReturnType<typeof page.locator>) => (await locator.boundingBox())!;
 
     const section = await box(page.getByRole("region", { name: "The page you are looking for doesn’t exist" }));
     expect(section.height).toBe(957);
     const heading = await box(page.getByRole("heading", { level: 1 }));
     expect(Math.abs(heading.y - 521)).toBeLessThanOrEqual(2);
+    const paragraph = await box(page.getByText("Try to use a correct url"));
+    expect(paragraph.height).toBeLessThan(30); // one line (18px × 160%), like Figma
     const button = await box(page.getByRole("link", { name: "Back to Home" }));
     expect(Math.abs(button.y - 786)).toBeLessThanOrEqual(2);
     const footer = await box(page.getByRole("contentinfo"));
