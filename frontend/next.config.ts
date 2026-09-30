@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
     // Production (Vercel) keeps full optimization — Vercel optimizes images on its own service.
     unoptimized: process.env.E2E === "1",
   },
+  redirects() {
+    return [
+      // Figma calls the page "Register"; /signup is the common name people type.
+      { source: "/signup", destination: "/register", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

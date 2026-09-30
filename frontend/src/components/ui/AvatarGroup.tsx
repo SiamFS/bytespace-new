@@ -17,6 +17,8 @@ const moreTones = {
   lime: "bg-secondary-400 text-neutral-950",
   // Growth section course card: black bubble, white text
   dark: "bg-black text-white",
+  // Login / Register "Happy Students" card: #242528 bubble, #f5f5f6 text
+  ink: "bg-neutral-950 text-neutral-50",
 };
 
 type AvatarGroupProps = {

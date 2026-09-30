@@ -54,8 +54,7 @@ export function CtaSection() {
           spacing="lg"
           className="max-w-[964px]"
         />
-        {/* /register isn't built yet → no prefetch (avoids a 404 in the console). */}
-        <Button href="/register" prefetch={false}>
+        <Button href="/register">
           Join as Creator
         </Button>
       </Container>

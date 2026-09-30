@@ -44,3 +44,28 @@ describe("Input variants", () => {
     expect(screen.getByLabelText("Email")).toHaveClass("text-body-m", "placeholder:text-neutral-950");
   });
 });
+
+describe("Input field variant + errors", () => {
+  it("uses the auth field style with a dark label", () => {
+    render(<Input label="Email" variant="field" />);
+    const wrapper = screen.getByLabelText("Email").parentElement;
+    expect(wrapper).toHaveClass("h-[52px]", "rounded-xl", "border", "border-neutral-100");
+    expect(screen.getByText("Email")).toHaveClass("text-label-s", "text-neutral-950");
+  });
+
+  it("shows the error, links it to the input and swaps the border colour", () => {
+    render(<Input label="Email" variant="field" error="Enter a valid email address" />);
+    const input = screen.getByLabelText("Email");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input).toHaveAccessibleDescription("Enter a valid email address");
+    expect(input.parentElement).toHaveClass("border-danger");
+    expect(input.parentElement).not.toHaveClass("border-neutral-100");
+  });
+
+  it("has no error attributes when valid", () => {
+    render(<Input label="Email" variant="field" />);
+    const input = screen.getByLabelText("Email");
+    expect(input).not.toHaveAttribute("aria-invalid");
+    expect(input).not.toHaveAttribute("aria-describedby");
+  });
+});

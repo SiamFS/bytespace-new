@@ -52,6 +52,12 @@
   --color-surface: #f6f6f6; /* frosted badges on course images */
   --color-canvas: #fafafa; /* Growth + Testimonials section background */
 
+  /* Off-palette colors used in the Login / Register frames */
+  --color-hint: #888888; /* "or" divider text, "New user?" */
+  --color-rule: #d1d1d1; /* "or" divider lines, social button borders */
+  /* Not in Figma (no error states designed) — our form error red, 4.9:1 on white (WCAG AA) */
+  --color-danger: #d92d20;
+
   /* Type scale — headings use Poppins SemiBold with -1% letter spacing */
   --text-heading-l: 4.5rem; /* 72px */
   --text-heading-l--line-height: 1.2;

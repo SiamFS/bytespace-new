@@ -97,7 +97,7 @@ export function GrowthSection() {
               sizes="435px"
               className="absolute top-0 left-[28px] h-[596px] w-[435px] drop-shadow-photo"
             />
-            <HappyStudentsCard className="absolute top-[413px] left-[283px]" />
+            <HappyStudentsCard variant="growth" className="absolute top-[413px] left-[283px]" />
             <Shape src={springALime} left={303} top={114} size={216} />
           </div>
 
