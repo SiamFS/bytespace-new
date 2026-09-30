@@ -10,11 +10,12 @@ const linkClass =
 
 /**
  * Site footer. Figma: white, 1200px content, newsletter on the left, three link
- * columns on the right, divider + copyright row at the bottom.
+ * columns on the right, divider + copyright row at the bottom. The grey top line is
+ * Figma's "Line 27"; 70px padding + 1px border keeps the content 71px from the top.
  */
 export function Footer() {
   return (
-    <footer className="bg-white pt-16 pb-12 lg:pt-[71px]">
+    <footer className="border-t border-neutral-200 bg-white pt-16 pb-12 lg:pt-[70px]">
       <Container className="flex flex-col gap-16 lg:gap-[130px]">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-[92px]">
           <div className="flex max-w-[528px] flex-col gap-[45px]">
@@ -53,7 +54,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-6 border-t border-neutral-200 pt-6">
+        <div className="flex flex-col gap-6 border-t border-neutral-200 pt-6 lg:pt-[22px]">
           <div className="flex flex-col gap-4 text-body-xs sm:flex-row sm:items-center sm:justify-between">
             <p className="text-neutral-950">@ 2023 ByteSpace. All rights reserved.</p>
             <ul className="flex flex-wrap gap-6">

@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { poppins, satoshi } from "./fonts";
 import "./globals.css";
 
+const description =
+  "Unlock your creativity, gain valuable knowledge, and grow your business with our wide range of courses.";
+
 export const metadata: Metadata = {
-  title: "ByteSpace",
-  description:
-    "Unlock your creativity, gain valuable knowledge, and grow your business with our wide range of courses.",
+  title: { default: "ByteSpace", template: "%s | ByteSpace" },
+  description,
+  applicationName: "ByteSpace",
+  openGraph: { type: "website", siteName: "ByteSpace", title: "ByteSpace", description },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

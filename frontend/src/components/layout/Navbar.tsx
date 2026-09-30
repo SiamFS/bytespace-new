@@ -14,8 +14,9 @@ const linkFocus =
  * Home / Courses / Creators centered, Sign In / Join Us / cart on the right.
  * Transparent and absolutely positioned over the first section, which provides the
  * blue background (it stays outside <main> so it keeps the "banner" landmark role).
+ * `highlightHref` draws a link as active on pages outside the nav (404 → "Home", as in Figma).
  */
-export function Navbar() {
+export function Navbar({ highlightHref }: { highlightHref?: string }) {
   return (
     <header className="absolute inset-x-0 top-0 z-30">
       <Container className="relative flex h-20 items-center justify-between md:grid md:h-[120px] md:grid-cols-[1fr_auto_1fr]">
@@ -24,7 +25,7 @@ export function Navbar() {
         </Link>
 
         <nav aria-label="Main" className="hidden md:block">
-          <NavLinks items={mainNav} className="flex items-center gap-6" />
+          <NavLinks items={mainNav} highlightHref={highlightHref} className="flex items-center gap-6" />
         </nav>
 
         <div className="hidden items-center justify-self-end gap-6 md:flex">

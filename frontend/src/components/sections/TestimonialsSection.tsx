@@ -11,9 +11,11 @@ import { testimonials } from "@/data/testimonials";
  */
 export function TestimonialsSection() {
   return (
+    // pb 59 (Figma 57 below the tallest card): Figma rounds every text box up to whole
+    // pixels, so our cards are ~1.6px shorter — the extra 2px keeps the section 784 tall.
     <section
       aria-labelledby="testimonials-title"
-      className="relative isolate overflow-hidden bg-canvas py-20 lg:pt-[74px] lg:pb-[57px]"
+      className="relative isolate overflow-hidden bg-canvas py-20 lg:pt-[74px] lg:pb-[59px]"
     >
       {/* Glows at Figma coordinates (relative to the section's 1440px frame). */}
       <div aria-hidden="true" className="absolute inset-y-0 left-1/2 -z-10 w-[1440px] -translate-x-1/2">

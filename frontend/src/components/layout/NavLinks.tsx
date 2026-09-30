@@ -10,22 +10,28 @@ type NavLinksProps = {
   className?: string;
   /** Called after a link is clicked (the mobile menu closes itself). */
   onNavigate?: () => void;
+  /**
+   * Link drawn in the active style whatever the route (the Figma 404 frame shows "Home"
+   * active). Only the real current page gets aria-current.
+   */
+  highlightHref?: string;
 };
 
 /** Main navigation links. The current page is marked active (Figma: Satoshi Medium vs Regular). */
-export function NavLinks({ items, className, onNavigate }: NavLinksProps) {
+export function NavLinks({ items, className, onNavigate, highlightHref }: NavLinksProps) {
   const pathname = usePathname();
 
   return (
     <ul className={className}>
       {items.map((item) => {
-        const active = pathname === item.href;
+        const current = pathname === item.href;
+        const active = current || highlightHref === item.href;
         return (
           <li key={item.href}>
             <Link
               href={item.href}
               prefetch={item.placeholder ? false : undefined}
-              aria-current={active ? "page" : undefined}
+              aria-current={current ? "page" : undefined}
               onClick={onNavigate}
               className={cn(
                 "rounded-sm text-body-m text-neutral-50 transition-opacity hover:opacity-80",
