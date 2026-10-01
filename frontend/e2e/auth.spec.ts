@@ -44,6 +44,12 @@ test.describe("auth pages", () => {
     });
   }
 
+  test("the logo goes back to the landing page", async ({ page }) => {
+    await gotoReady(page, "/register");
+    await page.getByRole("link", { name: "ByteSpace home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
   test("/signup permanently redirects to /register", async ({ page, request }) => {
     const response = await request.get("/signup", { maxRedirects: 0 });
     expect(response.status()).toBe(308);
