@@ -1,13 +1,15 @@
 import Image from "next/image";
+import type { ComponentProps } from "react";
 import { CourseCard } from "@/components/features/CourseCard";
 import { HappyStudentsCard } from "@/components/features/HappyStudentsCard";
+import { PhotoWithShadow } from "@/components/features/PhotoWithShadow";
 import { ProgressCard } from "@/components/features/ProgressCard";
 import { Container } from "@/components/ui/Container";
 import { Glow } from "@/components/ui/Glow";
 import { CheckCircleIcon } from "@/components/ui/icons";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import heroStudent from "@/assets/hero/student.png";
-import creator from "@/assets/growth/creator.png";
+import student from "@/assets/photos/student.png";
+import creator from "@/assets/photos/creator.png";
 import springALime from "@/assets/shapes/spring-a-lime-plain.png";
 import springBLime from "@/assets/shapes/spring-b-lime.png";
 import { courses } from "@/data/courses";
@@ -71,31 +73,38 @@ export function GrowthSection() {
             </dl>
           </div>
 
-          <PhotoOnMobile src={heroStudent} alt={photoAlt.student} />
+          <PhotoOnMobile src={student} alt={photoAlt.student} shadow="student" />
           <div className="relative hidden h-[552px] w-[621px] shrink-0 lg:block">
             <CourseCard course={courses[0]} variant="growth" className="absolute top-0 left-0 w-[373px]" />
-            <Image
-              src={heroStudent}
+            <PhotoWithShadow
+              shadow="student"
+              src={student}
               alt={photoAlt.student}
               sizes="577px"
-              className="absolute top-[12px] left-0 h-[540px] w-[577px] drop-shadow-photo"
+              className="absolute top-[12px] left-0 h-[540px] w-[577px]"
             />
-            <ProgressCard label="Learning Progress" value={55} className="absolute top-[213px] left-[345px]" />
+            <ProgressCard
+              label="Learning Progress"
+              value={55}
+              variant="growth"
+              className="absolute top-[213px] left-[345px]"
+            />
             <Shape src={springBLime} left={404} top={67} size={216} />
           </div>
         </div>
 
         {/* Row 2 — Create & Manage Courses Easily */}
         <div className="flex flex-col-reverse items-center gap-12 lg:flex-row lg:gap-[79px]">
-          <PhotoOnMobile src={creator} alt={photoAlt.creator} />
+          <PhotoOnMobile src={creator} alt={photoAlt.creator} shadow="creator" />
           <div className="relative hidden h-[596px] w-[541px] shrink-0 lg:block">
             <RevenueCard className="absolute top-[44px] left-0" />
             <YearToDateCard className="absolute top-[194px] left-0" />
-            <Image
+            <PhotoWithShadow
+              shadow="creator"
               src={creator}
               alt={photoAlt.creator}
               sizes="435px"
-              className="absolute top-0 left-[28px] h-[596px] w-[435px] drop-shadow-photo"
+              className="absolute top-0 left-[28px] h-[596px] w-[435px]"
             />
             <HappyStudentsCard variant="growth" className="absolute top-[413px] left-[283px]" />
             <Shape src={springALime} left={303} top={114} size={216} />
@@ -127,13 +136,22 @@ export function GrowthSection() {
   );
 }
 
-function PhotoOnMobile({ src, alt }: { src: typeof heroStudent; alt: string }) {
+function PhotoOnMobile({
+  src,
+  alt,
+  shadow,
+}: {
+  src: typeof student;
+  alt: string;
+  shadow: ComponentProps<typeof PhotoWithShadow>["shadow"];
+}) {
   return (
-    <Image
+    <PhotoWithShadow
+      shadow={shadow}
       src={src}
       alt={alt}
       sizes="(min-width: 640px) 420px, 90vw"
-      className="h-auto w-full max-w-[420px] drop-shadow-photo lg:hidden"
+      className="relative w-full max-w-[420px] lg:hidden"
     />
   );
 }
