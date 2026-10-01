@@ -12,7 +12,8 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="relative min-h-dvh overflow-hidden bg-primary-800 bg-grid">
       <div className="flex flex-col items-center gap-8 px-4 pt-6 pb-12 sm:px-8 sm:pb-16 xl:relative xl:left-1/2 xl:block xl:h-[1024px] xl:w-[1440px] xl:-translate-x-1/2 xl:p-0">
-        <header className="self-start xl:absolute xl:top-[35px] xl:left-[122px]">
+        {/* z-10: on xl the <main> below covers the whole stage and would swallow clicks on the logo. */}
+        <header className="relative z-10 self-start xl:absolute xl:top-[35px] xl:left-[122px]">
           {/* Figma: the "ByteSpace" wordmark on these frames has no fill, so only the mark shows. */}
           <Link
             href="/"
