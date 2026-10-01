@@ -47,17 +47,48 @@ describe("RegisterForm", () => {
     expect(await screen.findByText("Enter your full name")).toBeInTheDocument();
   });
 
-  it("posts trimmed values and redirects on success", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(json(201, { user: { id: "1" } }));
+  it("posts trimmed values, then asks to check the email (no sign-in yet)", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(json(201, { status: "verification_sent", email: "jamie@example.com", emailSent: true }));
     vi.stubGlobal("fetch", fetchMock);
     renderWithProviders(<RegisterForm />);
 
     await fill({ name: "  Jamie Davis  ", email: "JAMIE@example.com " });
 
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeInTheDocument();
+    expect(screen.getByText("jamie@example.com")).toBeInTheDocument();
+    expect(screen.getByText(/check your spam folder/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
+    expect(router.replace).not.toHaveBeenCalled();
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe("/api/auth/register");
     expect(JSON.parse(init.body)).toEqual({ name: "Jamie Davis", email: "jamie@example.com", password: "secret123" });
+  });
+
+  it("shows the link itself when the server has no email service (local / Docker)", async () => {
+    const link = "http://localhost:3000/verify-email?token=abc";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(json(201, { status: "verification_sent", email: "jamie@example.com", emailSent: false, verificationUrl: link })),
+    );
+    renderWithProviders(<RegisterForm />);
+    await fill();
+    expect(await screen.findByRole("link", { name: "Verify your email" })).toHaveAttribute("href", link);
+  });
+
+  it("can resend the email", async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url === "/api/auth/register"
+        ? json(201, { status: "verification_sent", email: "jamie@example.com", emailSent: true })
+        : json(200, { status: "sent_if_unverified" }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderWithProviders(<RegisterForm />);
+    await fill();
+    await userEvent.click(await screen.findByRole("button", { name: "Resend verification email" }));
+    expect(await screen.findByText(/a new link is on its way/)).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/api/auth/resend-verification", expect.objectContaining({ method: "POST" }));
   });
 
   it("puts 'email already exists' on the email field and focuses it", async () => {

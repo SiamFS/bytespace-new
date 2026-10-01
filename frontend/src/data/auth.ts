@@ -1,5 +1,13 @@
-/** Copy for the Login / Register pages, exactly as in the Figma frames. */
+/** Copy for the Login / Register pages, exactly as in the Figma frames (verify: our page, same style). */
 export const authCopy = {
+  verify: {
+    promoTitle: "One click and you're in",
+    promoText: "Confirming your email keeps your account safe and makes sure we can reach you.",
+    eyebrow: "Verify Email",
+    title: "Almost there",
+    switchPrompt: "Already verified?",
+    switchLink: { label: "Login", href: "/login" },
+  },
   login: {
     promoTitle: "Sign in with ease",
     promoText:

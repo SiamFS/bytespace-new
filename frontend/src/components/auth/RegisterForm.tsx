@@ -1,12 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { authCopy } from "@/data/auth";
-import { register as registerUser } from "@/lib/auth/api";
+import { register as registerUser, type VerificationSent } from "@/lib/auth/api";
 import { registerSchema } from "@/lib/auth/schemas";
+import { CheckEmailNotice } from "./CheckEmailNotice";
 import { FormStatus } from "./FormStatus";
 import { useAuthSubmit } from "./useAuthSubmit";
 
@@ -25,9 +27,17 @@ export function RegisterForm() {
     mode: "onTouched",
   });
   const { run, formError, slow } = useAuthSubmit("register", setError, isSubmitting);
+  // Set once the account is created: no session until the email is verified.
+  const [sent, setSent] = useState<VerificationSent>();
+
+  if (sent) return <CheckEmailNotice result={sent} />;
 
   return (
-    <form noValidate onSubmit={handleSubmit((values) => run(() => registerUser(values)))} className="flex flex-col gap-6">
+    <form
+      noValidate
+      onSubmit={handleSubmit(async (values) => setSent(await run(() => registerUser(values))))}
+      className="flex flex-col gap-6"
+    >
       <Input
         variant="field"
         label="Full Name"

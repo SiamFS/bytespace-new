@@ -37,14 +37,22 @@ The frontend (`npm run dev` in `frontend/`) proxies `/api/*` here, so the whole 
 |---|---|---|---|
 | GET | `/api/health` | — | `200 { status: "ok" }` — liveness, no database call |
 | GET | `/api/health/ready` | — | `200` with `checks.database`, or `503` when the database is down |
-| POST | `/api/auth/register` | `{ name, email, password }` | `201 { user }` + session cookie · `400` fields · `409` email taken · `429` |
-| POST | `/api/auth/login` | `{ email, password }` | `200 { user }` + session cookie · `401` · `429` with `Retry-After` |
+| POST | `/api/auth/register` | `{ name, email, password }` | `201 { status: "verification_sent", email, emailSent, verificationUrl? }` — no session until verified · `400` fields · `409` email taken · `429` |
+| POST | `/api/auth/login` | `{ email, password }` | `200 { user }` + session cookie · `401` · `403 EMAIL_NOT_VERIFIED` (right password, unverified) · `429` with `Retry-After` |
+| POST | `/api/auth/verify-email` | `{ token }` | `200 { user }` + session cookie · `400 INVALID_TOKEN` (unknown, used or expired) |
+| POST | `/api/auth/resend-verification` | `{ email }` | `200 { status: "sent_if_unverified" }` — same answer for any email · `429` (3 per 15 min) |
 | POST | `/api/auth/logout` | `{}` | `204`, cookie cleared (idempotent) |
 | GET | `/api/auth/me` | — | `200 { user }`, or `200 { user: null }` when signed out |
 | GET | `/api/auth/google` | — | `302` to Google (page navigation, not fetch) · `302 /login?error=google_unavailable` when not configured |
 | GET | `/api/auth/google/callback` | `?code&state` from Google | `302 /` + session cookie · `302 /login?error=google_cancelled \| google_failed \| google_conflict` |
 
 `user` is `{ id, name, email, createdAt }` — never the password hash. Every `/api` response is `Cache-Control: no-store`.
+
+**Email verification:** sign-up stores a random token's SHA-256 hash (24 hours, one use; a resend replaces it) and emails
+`<site>/verify-email?token=…` through Brevo's transactional API (`BREVO_API_KEY`, `EMAIL_FROM` = a verified Brevo sender).
+Without `BREVO_API_KEY` (local, Docker, tests) the email is logged and `verificationUrl` is returned so the page can show
+the link. Google accounts count as verified when Google says so; accounts from before verification existed were
+marked verified by the migration. Brevo's "Authorized IPs" must be off — Vercel's IPs change.
 
 Every error uses one shape: `{ "error": { "code": "NOT_FOUND", "message": "…", "fields"?: { … } } }`.
 

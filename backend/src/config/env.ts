@@ -32,9 +32,18 @@ const EnvSchema = z.object({
   // the "Continue with Google" button explains that Google sign-in isn't available.
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  // Verification emails through Brevo's transactional API (free plan: 300/day). Optional: without
+  // a key the API logs the email and returns the verification link to the page instead (local/Docker).
+  BREVO_API_KEY: z.string().min(1).optional(),
+  // Sender — must be a verified sender in Brevo (Settings → Senders).
+  EMAIL_FROM: z.email().optional(),
+  EMAIL_FROM_NAME: z.string().min(1).default("ByteSpace"),
   // Set to "1" by Vercel at runtime.
   VERCEL: z.string().optional(),
 }).superRefine((value, ctx) => {
+  if (value.BREVO_API_KEY && !value.EMAIL_FROM) {
+    ctx.addIssue({ code: "custom", path: ["EMAIL_FROM"], message: "required when BREVO_API_KEY is set (a verified Brevo sender)" });
+  }
   if (Boolean(value.GOOGLE_CLIENT_ID) !== Boolean(value.GOOGLE_CLIENT_SECRET)) {
     ctx.addIssue({
       code: "custom",

@@ -104,6 +104,10 @@ The test cases were written with the help of agentic coding tools, then reviewed
 - **Sign up / log in** with email and password: the form validates in the browser (same rules as the API —
   both test suites run one shared list of cases), the API stores a **bcrypt** password hash, and the session is a
   signed **JWT in an HttpOnly cookie** (`Secure`, `SameSite=Lax`, 7 days). The navbar then shows "Hi, name" + Log out.
+- **Email verification** (via **Brevo**): sign-up sends a "Verify your email" link (valid 24 hours, one use,
+  only a hash stored). Password login works only after verifying; the link signs you in. "Resend" is on the
+  sign-up confirmation and on the login page. Emails come from a Gmail sender (no own domain), so they may land
+  in **spam**. Without an email service (local / Docker) the page shows the link itself.
 - **Continue with Google** (Login page): real **OpenID Connect** sign-in with Google. The API checks the
   `state` (CSRF), then the ID token's signature, issuer, audience, expiry and nonce. A new Google user gets an
   account; an existing email/password account is linked only when Google says the email is verified.
@@ -121,6 +125,7 @@ The test cases were written with the help of agentic coding tools, then reviewed
 |---|---|---|
 | GET | `/api/health`, `/api/health/ready` | Liveness / database readiness |
 | POST | `/api/auth/register`, `/api/auth/login`, `/api/auth/logout` | Accounts and sessions |
+| POST | `/api/auth/verify-email`, `/api/auth/resend-verification` | Email verification (Brevo) |
 | GET | `/api/auth/me` | Current user (or `null`) |
 | GET | `/api/auth/google`, `/api/auth/google/callback` | Google sign-in |
 

@@ -83,3 +83,17 @@ describe("parseEnv — auth settings", () => {
     expect(() => parseEnv({ ...base, BCRYPT_ROUNDS: "16" })).toThrow(/BCRYPT_ROUNDS/);
   });
 });
+
+describe("parseEnv — email (Brevo)", () => {
+  it("is optional", () => {
+    expect(parseEnv(base).BREVO_API_KEY).toBeUndefined();
+  });
+
+  it("needs a sender when the key is set", () => {
+    expect(() => parseEnv({ ...base, BREVO_API_KEY: "xkeysib-x" })).toThrow(/EMAIL_FROM/);
+    expect(parseEnv({ ...base, BREVO_API_KEY: "xkeysib-x", EMAIL_FROM: "team@site.test" })).toMatchObject({
+      EMAIL_FROM: "team@site.test",
+      EMAIL_FROM_NAME: "ByteSpace",
+    });
+  });
+});

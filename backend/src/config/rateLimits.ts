@@ -10,6 +10,8 @@ const ipAndEmail = (req: Request) => `${ip(req)}:${String((req.body as { email?:
 export type RateLimitRules = {
   login: RateLimitRule[];
   register: RateLimitRule[];
+  resendVerification: RateLimitRule[];
+  verifyEmail: RateLimitRule[];
 };
 
 /**
@@ -22,4 +24,10 @@ export const defaultRateLimits: RateLimitRules = {
     { name: "login-ip", limit: 20, windowSeconds: 60, key: ip },
   ],
   register: [{ name: "register-ip", limit: env.REGISTER_LIMIT_PER_HOUR, windowSeconds: 60 * 60, key: ip }],
+  // Each resend sends a real email (Brevo free plan: 300/day): 3 per 15 min per address, 10 per hour per IP.
+  resendVerification: [
+    { name: "resend-account", limit: 3, windowSeconds: 15 * 60, key: ipAndEmail },
+    { name: "resend-ip", limit: 10, windowSeconds: 60 * 60, key: ip },
+  ],
+  verifyEmail: [{ name: "verify-ip", limit: 20, windowSeconds: 60, key: ip }],
 };
