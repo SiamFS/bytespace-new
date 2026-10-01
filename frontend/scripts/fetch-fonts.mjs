@@ -28,15 +28,32 @@ if (!match) {
 
 const fontUrl = match[1].startsWith("//") ? `https:${match[1]}` : match[1];
 const font = Buffer.from(await fetchOk(fontUrl).then((res) => res.arrayBuffer()));
+// woff2 files start with the signature "wOF2" — don't save an HTML error page as a font.
+if (font.subarray(0, 4).toString("latin1") !== "wOF2") {
+  throw new Error(`fetch-fonts: ${fontUrl} did not return a woff2 file`);
+}
 
 await mkdir(dirname(OUT_FILE), { recursive: true });
 await writeFile(OUT_FILE, font);
 console.log(`fetch-fonts: saved Satoshi (${font.length} bytes)`);
 
-async function fetchOk(url) {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`fetch-fonts: ${res.status} ${res.statusText} for ${url}`);
+/**
+ * Every build (Vercel, CI) depends on this download, so one network blip must not fail a
+ * deploy: 3 attempts, 15s timeout each, 1s → 3s backoff between them.
+ */
+async function fetchOk(url, attempts = 3) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return res;
+    } catch (error) {
+      if (attempt >= attempts) {
+        throw new Error(`fetch-fonts: ${url} failed after ${attempts} attempts: ${error.message}`);
+      }
+      const wait = 1000 * 3 ** (attempt - 1);
+      console.warn(`fetch-fonts: attempt ${attempt} failed (${error.message}), retrying in ${wait / 1000}s`);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
   }
-  return res;
 }

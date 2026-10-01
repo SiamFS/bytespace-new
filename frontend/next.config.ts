@@ -2,7 +2,15 @@ import type { NextConfig } from "next";
 
 // Express API the browser reaches through /api (same origin → first-party cookies, no CORS).
 // Read at build time: set API_URL in the Vercel project before deploying.
+// On Vercel (VERCEL=1) a missing value fails the build — the localhost fallback would ship a site
+// whose every API call breaks.
+if (process.env.VERCEL === "1" && !process.env.API_URL) {
+  throw new Error("API_URL is not set. Add it in Vercel → Project → Settings → Environment Variables, then redeploy.");
+}
 const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+if (!/^https?:\/\/[^/]+$/.test(apiUrl)) {
+  throw new Error(`API_URL must be an origin like https://api.example.com (no path), got "${apiUrl}"`);
+}
 
 const nextConfig: NextConfig = {
   images: {
@@ -20,7 +28,7 @@ const nextConfig: NextConfig = {
   },
   rewrites() {
     // Proxy /api/* to Express, which mounts everything under /api. Vercel waits up to 120s for
-    // an external rewrite — longer than Render's ~1 minute cold start.
+    // an external rewrite — well above any API cold start.
     return [{ source: "/api/:path*", destination: `${apiUrl}/api/:path*` }];
   },
 };

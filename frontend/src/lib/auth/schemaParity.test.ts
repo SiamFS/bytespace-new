@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
-// Shared with the API tests (backend/test/authSchemaParity.test.ts): both sides must agree.
-import cases from "../../../../backend/test/fixtures/auth-validation-cases.json";
+// Shared with the API tests (backend/test/authSchemaParity.test.ts): both sides must agree. The file
+// lives here, not in backend/, because Vercel builds only frontend/ (Root Directory).
+import cases from "./auth-validation-cases.json";
 import { loginSchema, registerSchema } from "./schemas";
 
 type Case = { input: Record<string, unknown>; errors: Record<string, string>; output?: Record<string, unknown> };

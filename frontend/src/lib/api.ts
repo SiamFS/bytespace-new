@@ -13,6 +13,7 @@ export type ApiErrorCode =
   | "RATE_LIMITED"
   | "NETWORK_ERROR"
   | "TIMEOUT"
+  | "BAD_RESPONSE"
   | "UNKNOWN"
   | (string & {});
 
@@ -38,7 +39,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Render's free tier needs up to ~1 minute to wake up — give it that, then give up. */
+/** Allow for a slow serverless cold start (a few seconds) with a wide margin, then give up. */
 export const REQUEST_TIMEOUT_MS = 70_000;
 
 type ErrorBody = { error?: { code?: string; message?: string; fields?: Record<string, string> } };
@@ -49,40 +50,12 @@ function parseRetryAfter(value: string | null): number | undefined {
   return Number.isFinite(seconds) && seconds >= 0 ? Math.ceil(seconds) : undefined;
 }
 
-export async function postJson<T>(path: string, body: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
+async function request<T>(path: string, init: RequestInit, timeoutMs: number): Promise<T> {
   let response: Response;
   try {
     response = await fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body),
-      credentials: "same-origin",
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-      throw new ApiError(0, "TIMEOUT", "The server took too long to respond.");
-    }
-    throw new ApiError(0, "NETWORK_ERROR", "Could not reach the server.");
-  }
-
-  const data: unknown = await response.json().catch(() => undefined);
-
-  if (!response.ok) {
-    const error = (data as ErrorBody | undefined)?.error;
-    throw new ApiError(response.status, error?.code ?? "UNKNOWN", error?.message ?? response.statusText, {
-      fields: error?.fields,
-      retryAfter: parseRetryAfter(response.headers.get("Retry-After")),
-    });
-  }
-  return data as T;
-}
-
-export async function getJson<T>(path: string, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
-  let response: Response;
-  try {
-    response = await fetch(path, {
-      headers: { Accept: "application/json" },
+      ...init,
+      headers: { Accept: "application/json", ...init.headers },
       credentials: "same-origin",
       cache: "no-store",
       signal: AbortSignal.timeout(timeoutMs),
@@ -93,10 +66,36 @@ export async function getJson<T>(path: string, timeoutMs = REQUEST_TIMEOUT_MS): 
     }
     throw new ApiError(0, "NETWORK_ERROR", "Could not reach the server.");
   }
-  const data: unknown = await response.json().catch(() => undefined);
+
+  // 204 No Content (logout) is a success without a body.
+  if (response.status === 204) return undefined as T;
+
+  const isJson = response.headers.get("Content-Type")?.includes("application/json") ?? false;
+  const data: unknown = isJson ? await response.json().catch(() => undefined) : undefined;
+
   if (!response.ok) {
     const error = (data as ErrorBody | undefined)?.error;
-    throw new ApiError(response.status, error?.code ?? "UNKNOWN", error?.message ?? response.statusText);
+    throw new ApiError(response.status, error?.code ?? "UNKNOWN", error?.message ?? response.statusText, {
+      fields: error?.fields,
+      retryAfter: parseRetryAfter(response.headers.get("Retry-After")),
+    });
+  }
+  // A "successful" response that isn't our JSON — e.g. a host's HTML error or loading page
+  // coming back through the /api rewrite. Never treat it as success.
+  if (data === undefined) {
+    throw new ApiError(response.status, "BAD_RESPONSE", "The server sent an unexpected response.");
   }
   return data as T;
+}
+
+export function getJson<T>(path: string, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
+  return request<T>(path, { method: "GET" }, timeoutMs);
+}
+
+export function postJson<T>(path: string, body: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
+  return request<T>(
+    path,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+    timeoutMs,
+  );
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
 import { loginSchema, registerSchema } from "../src/schemas/auth.schema.js";
-import cases from "./fixtures/auth-validation-cases.json" with { type: "json" };
+// Owned by the frontend (Vercel only builds frontend/); backend tests run from the full checkout.
+import cases from "../../frontend/src/lib/auth/auth-validation-cases.json" with { type: "json" };
 
 type Case = { input: Record<string, unknown>; errors: Record<string, string>; output?: Record<string, unknown> };
 

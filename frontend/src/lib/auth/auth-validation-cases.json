@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared by backend (test/authSchemaParity.test.ts) and frontend (src/lib/auth/schemaParity.test.ts). `errors` = first message per field; {} = valid. `output` = parsed value when valid.",
+  "$comment": "Shared by frontend (src/lib/auth/schemaParity.test.ts) and backend (backend/test/authSchemaParity.test.ts). `errors` = first message per field; {} = valid. `output` = parsed value when valid.",
   "register": [
     {
       "input": {

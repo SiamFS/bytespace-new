@@ -56,6 +56,11 @@ describe("parseEnv — auth settings", () => {
     expect(() => parseEnv({ ...base, REDIS_URL: "http://example.com" })).toThrow(/REDIS_URL/);
   });
 
+  it("requires Redis on Vercel", () => {
+    expect(() => parseEnv({ ...base, VERCEL: "1" })).toThrow(/REDIS_URL[\s\S]*required on Vercel/);
+    expect(parseEnv({ ...base, VERCEL: "1", REDIS_URL: "rediss://default:pw@example.upstash.io:6379" }).VERCEL).toBe("1");
+  });
+
   it("defaults bcrypt cost to 12 and bounds it", () => {
     expect(parseEnv(base).BCRYPT_ROUNDS).toBe(12);
     expect(() => parseEnv({ ...base, BCRYPT_ROUNDS: "3" })).toThrow(/BCRYPT_ROUNDS/);
