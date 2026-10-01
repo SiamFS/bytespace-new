@@ -44,6 +44,22 @@ describe("parseEnv", () => {
   });
 });
 
+describe("parseEnv — Google sign-in", () => {
+  it("is optional", () => {
+    const env = parseEnv(base);
+    expect(env.GOOGLE_CLIENT_ID).toBeUndefined();
+    expect(env.GOOGLE_CLIENT_SECRET).toBeUndefined();
+  });
+
+  it("needs both the client id and the secret", () => {
+    expect(() => parseEnv({ ...base, GOOGLE_CLIENT_ID: "id.apps.googleusercontent.com" })).toThrow(/GOOGLE_CLIENT_SECRET/);
+    expect(() => parseEnv({ ...base, GOOGLE_CLIENT_SECRET: "secret" })).toThrow(/GOOGLE_CLIENT_ID/);
+    expect(parseEnv({ ...base, GOOGLE_CLIENT_ID: "id", GOOGLE_CLIENT_SECRET: "secret" })).toMatchObject({
+      GOOGLE_CLIENT_ID: "id",
+    });
+  });
+});
+
 describe("parseEnv — auth settings", () => {
   it("requires a JWT secret of at least 32 characters", () => {
     expect(() => parseEnv({ ...base, JWT_SECRET: undefined })).toThrow(/JWT_SECRET/);

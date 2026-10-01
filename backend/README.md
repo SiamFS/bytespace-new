@@ -41,6 +41,8 @@ The frontend (`npm run dev` in `frontend/`) proxies `/api/*` here, so the whole 
 | POST | `/api/auth/login` | `{ email, password }` | `200 { user }` + session cookie · `401` · `429` with `Retry-After` |
 | POST | `/api/auth/logout` | `{}` | `204`, cookie cleared (idempotent) |
 | GET | `/api/auth/me` | — | `200 { user }`, or `200 { user: null }` when signed out |
+| GET | `/api/auth/google` | — | `302` to Google (page navigation, not fetch) · `302 /login?error=google_unavailable` when not configured |
+| GET | `/api/auth/google/callback` | `?code&state` from Google | `302 /` + session cookie · `302 /login?error=google_cancelled \| google_failed \| google_conflict` |
 
 `user` is `{ id, name, email, createdAt }` — never the password hash. Every `/api` response is `Cache-Control: no-store`.
 
@@ -56,6 +58,12 @@ Every error uses one shape: `{ "error": { "code": "NOT_FOUND", "message": "…",
 - **CSRF:** SameSite=Lax, JSON-only writes, and the `Origin` header (when present) must be in `CORS_ORIGINS`.
 - **Rate limits** (Redis, fixed window): login 5/min per IP + email and 20/min per IP; register
   `REGISTER_LIMIT_PER_HOUR` per IP. If Redis is down the request is allowed and the error logged.
+- **Google sign-in** (OpenID Connect, authorization code flow — Google's "OpenID Connect" guide): a random `state`
+  and `nonce` live in a 10-minute `HttpOnly; SameSite=Lax` cookie; the callback checks `state` (login CSRF), then
+  the ID token's signature (Google's JWKS), issuer, audience, expiry and `nonce`. Accounts are matched by Google's
+  `sub`, never by email. A Google login is linked to an existing email/password account only when Google says the
+  email is verified; otherwise the user is told to sign in with their password. Google-only accounts have no
+  password (`passwordHash` is null), so password login for them always fails with the usual 401.
 - **Validation** rules match the frontend's: both test suites run `frontend/src/lib/auth/auth-validation-cases.json`.
 
 ## Structure
@@ -86,6 +94,11 @@ See `.env.example`. The server refuses to start if a variable is missing or inva
 - `TRUST_PROXY` — number of reverse proxies in front of the API, so `req.ip` is the real client (rate limits key on it).
 - `DATABASE_URL` — used by the app (Neon: the pooled `-pooler` host). `DIRECT_URL` — optional, used only by `prisma migrate` (Neon: the direct host; migrations can't run through PgBouncer). Falls back to `DATABASE_URL`.
 - `JWT_SECRET` — required, 32+ characters. `REDIS_URL` — optional locally, required on Vercel (`rediss://…` for Upstash). `BCRYPT_ROUNDS` — default 12.
+- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` — optional (both or neither) for Google sign-in. Google Cloud Console →
+  Google Auth Platform → Clients → Web application. The authorized redirect URI is the **first** `CORS_ORIGINS`
+  entry + `/api/auth/google/callback` (e.g. `https://<site>/api/auth/google/callback`) — the browser reaches the
+  API through the website's `/api` rewrite, so the session cookie stays first-party. Publish the app ("In
+  production") so any Google account can sign in; with only `openid email profile` no verification is needed.
 
 ## Deploy (Vercel)
 

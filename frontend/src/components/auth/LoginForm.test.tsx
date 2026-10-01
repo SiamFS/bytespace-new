@@ -25,6 +25,32 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
+describe("LoginForm — after a failed Google sign-in", () => {
+  it("explains why, from ?error=", async () => {
+    window.history.replaceState(null, "", "/login?error=google_conflict");
+    renderWithProviders(<LoginForm />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "An account with this email already exists. Sign in with your password.",
+    );
+  });
+
+  it("ignores unknown reasons", async () => {
+    window.history.replaceState(null, "", "/login?error=<script>");
+    renderWithProviders(<LoginForm />);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeEmptyDOMElement());
+  });
+
+  it("drops the Google message once the form is submitted", async () => {
+    window.history.replaceState(null, "", "/login?error=google_failed");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(200, { user: { id: "1" } })));
+    renderWithProviders(<LoginForm />);
+    expect(await screen.findByText("Google sign-in didn't work. Please try again.")).toBeInTheDocument();
+
+    await fillAndSubmit("jamie@example.com", "secret123");
+    await waitFor(() => expect(screen.queryByText("Google sign-in didn't work. Please try again.")).not.toBeInTheDocument());
+  });
+});
+
 describe("LoginForm", () => {
   it("has labelled email and password fields with the Figma placeholders", () => {
     renderWithProviders(<LoginForm />);

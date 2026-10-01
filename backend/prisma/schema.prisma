@@ -16,7 +16,10 @@ model User {
   name         String
   /// Stored lowercased; the service normalises before every read and write.
   email        String   @unique
-  passwordHash String
+  /// Null for accounts created with Google sign-in (they have no password).
+  passwordHash String?
+  /// Google's `sub` claim — the stable account id (Google: never use the email as the id).
+  googleId     String?  @unique
   /// Bumped to revoke every session of the user (checked on each authenticated request).
   tokenVersion Int      @default(0)
   createdAt    DateTime @default(now())
