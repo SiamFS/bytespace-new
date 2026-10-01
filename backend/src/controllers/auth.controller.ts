@@ -1,12 +1,6 @@
-import type { RequestHandler, Response } from "express";
-import type { User } from "../generated/prisma/client.js";
-import { clearSessionCookie, createSessionToken, SESSION_COOKIE, sessionCookie } from "../lib/session.js";
+import type { RequestHandler } from "express";
+import { clearSessionCookie, SESSION_COOKIE, startSession } from "../lib/session.js";
 import { toPublicUser, type AuthService } from "../services/auth.service.js";
-
-async function startSession(res: Response, user: User) {
-  const token = await createSessionToken({ userId: user.id, version: user.tokenVersion });
-  res.cookie(SESSION_COOKIE, token, sessionCookie);
-}
 
 /** HTTP layer for /api/auth. Bodies are already validated (middleware/validateBody). */
 export function createAuthController(auth: AuthService) {

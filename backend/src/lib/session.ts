@@ -1,6 +1,7 @@
-import type { CookieOptions } from "express";
+import type { CookieOptions, Response } from "express";
 import { jwtVerify, SignJWT } from "jose";
 import { env } from "../config/env.js";
+import type { User } from "../generated/prisma/client.js";
 
 /** Cookie holding the session JWT. Generic name (Express security guide: don't fingerprint). */
 export const SESSION_COOKIE = "session";
@@ -57,3 +58,9 @@ export const clearSessionCookie: CookieOptions = {
   sameSite: sessionCookie.sameSite,
   path: sessionCookie.path,
 };
+
+/** Signs a session token for the user and sets it as the session cookie. */
+export async function startSession(res: Response, user: User) {
+  const token = await createSessionToken({ userId: user.id, version: user.tokenVersion });
+  res.cookie(SESSION_COOKIE, token, sessionCookie);
+}

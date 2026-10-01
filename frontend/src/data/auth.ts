@@ -24,8 +24,19 @@ export const authCopy = {
   },
 } as const;
 
-/** Social sign-in buttons (Login only). OAuth isn't set up, so they lead to placeholder routes. */
+/**
+ * Social sign-in buttons (Login only). Google is real: a full-page navigation to the API, which
+ * redirects to Google and back. Facebook is still a placeholder route (no app registered).
+ */
 export const socialProviders = [
-  { id: "facebook", label: "Continue with Facebook", href: "/auth/facebook" },
-  { id: "google", label: "Continue with Google", href: "/auth/google" },
+  { id: "facebook", label: "Continue with Facebook", href: "/auth/facebook", kind: "placeholder" },
+  { id: "google", label: "Continue with Google", href: "/api/auth/google", kind: "oauth" },
 ] as const;
+
+/** Messages for /login?error=<reason> — the API sends people back here when Google sign-in fails. */
+export const googleErrorMessages: Record<string, string> = {
+  google_unavailable: "Google sign-in isn't available right now. Please sign in with your email.",
+  google_cancelled: "Google sign-in was cancelled.",
+  google_failed: "Google sign-in didn't work. Please try again.",
+  google_conflict: "An account with this email already exists. Sign in with your password.",
+};

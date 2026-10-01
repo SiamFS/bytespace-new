@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AuthCard } from "./AuthCard";
-import { SocialSignIn } from "./SocialSignIn";
 
 describe("AuthCard", () => {
   it("is a region labelled by its h1, with the eyebrow and switch link", () => {
@@ -39,14 +38,5 @@ describe("AuthCard", () => {
     );
     expect(screen.getByText("Already have an account?")).toHaveClass("text-neutral-700");
     expect(container.querySelector("section > div")).toHaveClass("xl:gap-[122px]");
-  });
-});
-
-describe("SocialSignIn", () => {
-  it("renders named placeholder links for Facebook and Google", () => {
-    render(<SocialSignIn />);
-    expect(screen.getByRole("link", { name: "Continue with Facebook" })).toHaveAttribute("href", "/auth/facebook");
-    expect(screen.getByRole("link", { name: "Continue with Google" })).toHaveAttribute("href", "/auth/google");
-    expect(screen.getByRole("separator", { name: "or" })).toBeInTheDocument();
   });
 });

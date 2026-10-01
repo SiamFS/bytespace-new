@@ -23,6 +23,7 @@ export function useAuthSubmit<Values extends FieldValues>(
   const setSessionUser = useSetSessionUser();
   const [formError, setFormError] = useState<string>();
   const [slow, setSlow] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (!isSubmitting) return;
@@ -33,6 +34,7 @@ export function useAuthSubmit<Values extends FieldValues>(
   async function run(request: () => Promise<{ user: User }>) {
     setFormError(undefined);
     setSlow(false);
+    setSubmitted(true);
     let user: User;
     try {
       ({ user } = await request());
@@ -51,5 +53,6 @@ export function useAuthSubmit<Values extends FieldValues>(
   }
 
   // The hint only matters while a request is in flight.
-  return { run, formError, slow: slow && isSubmitting };
+  // `submitted`: the form has been sent at least once (older page messages no longer apply).
+  return { run, formError, slow: slow && isSubmitting, submitted };
 }

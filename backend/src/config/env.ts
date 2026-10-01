@@ -28,9 +28,20 @@ const EnvSchema = z.object({
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   // Sign-ups allowed per IP per hour. Raised only for automated full-stack test runs.
   REGISTER_LIMIT_PER_HOUR: z.coerce.number().int().min(1).default(5),
+  // Google sign-in (Google Cloud Console → Clients → Web application). Optional: without them
+  // the "Continue with Google" button explains that Google sign-in isn't available.
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   // Set to "1" by Vercel at runtime.
   VERCEL: z.string().optional(),
 }).superRefine((value, ctx) => {
+  if (Boolean(value.GOOGLE_CLIENT_ID) !== Boolean(value.GOOGLE_CLIENT_SECRET)) {
+    ctx.addIssue({
+      code: "custom",
+      path: [value.GOOGLE_CLIENT_ID ? "GOOGLE_CLIENT_SECRET" : "GOOGLE_CLIENT_ID"],
+      message: "set both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or neither",
+    });
+  }
   // Vercel can run several function instances at once — in-memory rate limits wouldn't be shared.
   if (value.VERCEL === "1" && !value.REDIS_URL) {
     ctx.addIssue({ code: "custom", path: ["REDIS_URL"], message: "REDIS_URL is required on Vercel (rate limits must be shared)" });

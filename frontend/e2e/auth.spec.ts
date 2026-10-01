@@ -178,6 +178,24 @@ test.describe("login form", () => {
   });
 });
 
+test.describe("Google sign-in", () => {
+  test("the Google button navigates to the API, which hands over to Google", async ({ page }) => {
+    // Stand-in for the API's redirect to accounts.google.com (no real Google in E2E).
+    await page.route("**/api/auth/google", (route) =>
+      route.fulfill({ status: 200, contentType: "text/html", body: "<h1>Google sign-in</h1>" }),
+    );
+    await page.goto("/login");
+    await page.getByRole("link", { name: "Continue with Google" }).click();
+    await expect(page).toHaveURL(/\/api\/auth\/google$/);
+    await expect(page.getByRole("heading", { name: "Google sign-in" })).toBeVisible();
+  });
+
+  test("a failed Google sign-in is explained on the login page", async ({ page }) => {
+    await page.goto("/login?error=google_cancelled");
+    await expect(page.locator("form").getByRole("alert")).toHaveText("Google sign-in was cancelled.");
+  });
+});
+
 test.describe("register form", () => {
   test("shows field rules", async ({ page }) => {
     await page.goto("/register");

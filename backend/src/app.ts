@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { env } from "./config/env.js";
 import { defaultRateLimits, type RateLimitRules } from "./config/rateLimits.js";
+import { createGoogleClient, type GoogleClient } from "./lib/google.js";
 import { logger } from "./lib/logger.js";
 import { prisma } from "./lib/prisma.js";
 import { getRateLimitStore } from "./lib/rateLimitStore.js";
@@ -21,6 +22,7 @@ export type AppDeps = {
   auth: AuthService;
   rateLimitStore: RateLimitStore;
   rateLimits: RateLimitRules;
+  google: GoogleClient;
 };
 
 const defaultDeps = (): AppDeps => ({
@@ -28,6 +30,7 @@ const defaultDeps = (): AppDeps => ({
   auth: createAuthService(prisma),
   rateLimitStore: getRateLimitStore(),
   rateLimits: defaultRateLimits,
+  google: createGoogleClient({ clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }),
 });
 
 /**

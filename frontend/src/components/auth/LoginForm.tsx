@@ -9,6 +9,7 @@ import { login } from "@/lib/auth/api";
 import { loginSchema } from "@/lib/auth/schemas";
 import { FormStatus } from "./FormStatus";
 import { useAuthSubmit } from "./useAuthSubmit";
+import { useGoogleError } from "./useGoogleError";
 
 const copy = authCopy.login;
 
@@ -24,7 +25,8 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
     mode: "onTouched",
   });
-  const { run, formError, slow } = useAuthSubmit("login", setError, isSubmitting);
+  const { run, formError, slow, submitted } = useAuthSubmit("login", setError, isSubmitting);
+  const googleError = useGoogleError();
 
   return (
     <form noValidate onSubmit={handleSubmit((values) => run(() => login(values)))} className="flex flex-col gap-6">
@@ -49,7 +51,8 @@ export function LoginForm() {
         error={errors.password?.message}
         {...register("password")}
       />
-      <FormStatus error={formError} slow={slow} />
+      {/* A failed Google sign-in is reported until the form is used instead. */}
+      <FormStatus error={formError ?? (submitted ? undefined : googleError)} slow={slow} />
       <Button type="submit" disabled={isSubmitting} aria-disabled={isSubmitting} className="self-end">
         {isSubmitting ? copy.pending : copy.submit}
       </Button>
