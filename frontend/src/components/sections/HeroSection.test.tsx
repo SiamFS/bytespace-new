@@ -27,7 +27,7 @@ describe("HeroSection", () => {
     const { container } = render(<HeroSection />);
     expect(screen.getAllByAltText("Smiling student with headphones holding a laptop").length).toBeGreaterThan(0);
     const decorative = [...container.querySelectorAll("img")].filter((img) => img.getAttribute("alt") === "");
-    // 6 shapes + 7 avatars
-    expect(decorative).toHaveLength(13);
+    // 6 shapes + 7 avatars + 2 photo shadows (desktop + mobile photo)
+    expect(decorative).toHaveLength(15);
   });
 });

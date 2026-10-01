@@ -1,9 +1,10 @@
 import Image, { type StaticImageData } from "next/image";
 import { HappyStudentsCard } from "@/components/features/HappyStudentsCard";
+import { PhotoWithShadow } from "@/components/features/PhotoWithShadow";
 import { ProgressCard } from "@/components/features/ProgressCard";
 import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
-import heroStudent from "@/assets/hero/student.png";
+import student from "@/assets/photos/student.png";
 import cylinderLime from "@/assets/shapes/cylinder-lime.png";
 import springLight from "@/assets/shapes/spring-light.png";
 import springLightSmall from "@/assets/shapes/spring-light-small.png";
@@ -55,13 +56,14 @@ export function HeroSection() {
 
       {/* Desktop stage, front layer: photo, stat cards and 3D shapes. */}
       <div className="absolute top-0 left-1/2 hidden h-[1024px] w-[1440px] -translate-x-1/2 lg:block">
-        <Image
-          src={heroStudent}
+        <PhotoWithShadow
+          shadow="student"
+          src={student}
           alt="Smiling student with headphones holding a laptop"
           loading="eager"
           fetchPriority="high"
           sizes="578px"
-          className="absolute top-[512px] left-[431px] h-[541px] w-[578px] drop-shadow-photo"
+          className="absolute top-[512px] left-[431px] h-[541px] w-[578px]"
         />
         <ProgressCard label="Learning Progress" value={55} className="absolute top-[651px] left-[842px]" />
         <HappyStudentsCard className="absolute top-[837px] left-[328px]" />
@@ -98,11 +100,12 @@ export function HeroSection() {
           aria-hidden="true"
           className="absolute top-[40%] left-1/2 size-[640px] -translate-x-1/2 rounded-full border-[180px] border-secondary-500 sm:size-[820px] sm:border-[230px]"
         />
-        <Image
-          src={heroStudent}
+        <PhotoWithShadow
+          shadow="student"
+          src={student}
           alt="Smiling student with headphones holding a laptop"
           sizes="(min-width: 640px) 480px, 360px"
-          className="absolute bottom-0 left-1/2 w-[360px] max-w-none -translate-x-1/2 drop-shadow-photo sm:w-[480px]"
+          className="absolute bottom-0 left-1/2 w-[360px] max-w-none -translate-x-1/2 sm:w-[480px]"
         />
       </div>
     </section>

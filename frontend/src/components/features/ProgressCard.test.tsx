@@ -17,6 +17,13 @@ describe("ProgressCard", () => {
     expect(bar).toHaveAttribute("aria-valuemax", "100");
   });
 
+  it("uses the taller label line only in the growth variant (Figma 14/171%)", () => {
+    const { rerender } = render(<ProgressCard label="Learning Progress" value={55} />);
+    expect(screen.getByText("Learning Progress")).not.toHaveClass("leading-6");
+    rerender(<ProgressCard label="Learning Progress" value={55} variant="growth" />);
+    expect(screen.getByText("Learning Progress")).toHaveClass("leading-6");
+  });
+
   it("fills the bar to the given value", () => {
     render(<ProgressCard label="Learning Progress" value={55} />);
     const fill = screen.getByRole("progressbar").firstElementChild as HTMLElement;
