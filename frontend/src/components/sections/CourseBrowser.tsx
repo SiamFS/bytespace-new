@@ -1,25 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { CourseCard } from "@/components/features/CourseCard";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { categoryRows, courses, FEATURED } from "@/data/courses";
+import { categoryRows, courses, FEATURED, type Course } from "@/data/courses";
 import { cn } from "@/lib/cn";
 
 // Phones show this many cards until "Show all" is pressed (our design — keeps the page short).
 const PHONE_LIMIT = 3;
 
-/** Category chips + course grid. Picking a chip filters the grid (with an empty state). */
+/** Every word of the search must appear in the title, creator or category (case-insensitive). */
+export function matchesSearch(course: Course, search: string) {
+  const haystack = `${course.title} ${course.author} ${course.category}`.toLowerCase();
+  return search.toLowerCase().split(/\s+/).filter(Boolean).every((word) => haystack.includes(word));
+}
+
+/**
+ * Reports the hero search (?q=) to the grid. Kept in its own Suspense boundary: reading the URL
+ * here (Next docs, useSearchParams → "Prerendering") leaves the rest of the grid prerendered.
+ */
+function SearchParamSync({ onSearch }: { onSearch: (search: string) => void }) {
+  const search = (useSearchParams().get("q") ?? "").trim().slice(0, 100);
+  useEffect(() => {
+    onSearch(search);
+  }, [search, onSearch]);
+  return null;
+}
+
+const linkButton =
+  "rounded-sm text-label-m text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-primary-600";
+
+/**
+ * Category chips + course grid. Picking a chip filters the grid; the hero search (?q=) filters
+ * it too and scrolls here (our design — the landing page has no separate results page).
+ */
 export function CourseBrowser() {
+  const router = useRouter();
+  const rootRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(FEATURED);
+  const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState(false);
-  const visible = active === FEATURED ? courses : courses.filter((course) => course.category === active);
+
+  const onSearch = useCallback((next: string) => {
+    setSearch(next);
+    if (!next) return;
+    // A new search looks at every course and shows all results.
+    setActive(FEATURED);
+    setExpanded(true);
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const root = rootRef.current;
+    (root?.closest("section") ?? root)?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }, []);
+
+  const visible = courses.filter(
+    (course) => (active === FEATURED || course.category === active) && (!search || matchesSearch(course, search)),
+  );
   const collapsed = !expanded && visible.length > PHONE_LIMIT;
+  const clearSearch = () => router.replace("/", { scroll: false });
 
   return (
-    <div className="flex flex-col gap-12 lg:gap-[77px]">
+    <div ref={rootRef} className="flex flex-col gap-12 lg:gap-[77px]">
+      <Suspense fallback={null}>
+        <SearchParamSync onSearch={onSearch} />
+      </Suspense>
+
       {/* xl (where the 1200px layout fits) keeps Figma's three rows; tablets wrap freely (rows
           use display: contents); phones get one swipeable row instead of ~11 wrapped rows. */}
       <div
@@ -56,10 +103,24 @@ export function CourseBrowser() {
         ))}
       </div>
 
+      {search && (
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center">
+          <p className="text-body-l text-neutral-700">
+            {visible.length} {visible.length === 1 ? "course" : "courses"} for “{search}”
+            {active !== FEATURED && ` in ${active}`}
+          </p>
+          <button type="button" onClick={clearSearch} className={linkButton}>
+            Clear search
+          </button>
+        </div>
+      )}
+
       <p aria-live="polite" className="sr-only">
-        {active === FEATURED
-          ? `Showing all ${visible.length} featured courses`
-          : `${visible.length} ${visible.length === 1 ? "course" : "courses"} in ${active}`}
+        {search
+          ? `${visible.length} ${visible.length === 1 ? "course" : "courses"} for ${search}`
+          : active === FEATURED
+            ? `Showing all ${visible.length} featured courses`
+            : `${visible.length} ${visible.length === 1 ? "course" : "courses"} in ${active}`}
       </p>
 
       {visible.length > 0 ? (
@@ -85,14 +146,18 @@ export function CourseBrowser() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-neutral-200 px-6 py-16 text-center">
-          <p className="text-body-l text-neutral-700">No courses in {active} yet.</p>
-          <button
-            type="button"
-            onClick={() => setActive(FEATURED)}
-            className="rounded-sm text-label-m text-primary-800 hover:underline focus-visible:outline-2 focus-visible:outline-primary-600"
-          >
-            Show featured courses
-          </button>
+          <p className="text-body-l text-neutral-700">
+            {search ? `No courses match “${search}”${active !== FEATURED ? ` in ${active}` : ""}.` : `No courses in ${active} yet.`}
+          </p>
+          {search ? (
+            <button type="button" onClick={clearSearch} className={linkButton}>
+              Clear search
+            </button>
+          ) : (
+            <button type="button" onClick={() => setActive(FEATURED)} className={linkButton}>
+              Show featured courses
+            </button>
+          )}
         </div>
       )}
     </div>

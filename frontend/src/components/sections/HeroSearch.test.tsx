@@ -3,11 +3,9 @@ import { describe, expect, it } from "vitest";
 import { HeroSearch } from "./HeroSearch";
 
 describe("HeroSearch", () => {
-  it("is a search landmark that submits to /courses with GET", () => {
+  it("is a search landmark that searches the landing page itself (GET /?q=)", () => {
     render(<HeroSearch />);
-    const form = screen.getByRole("search");
-    expect(form).toHaveAttribute("action", "/courses");
-    expect(form).toHaveAttribute("method", "get");
+    expect(screen.getByRole("search")).toHaveAttribute("action", "/");
   });
 
   it("sends the query as ?q=", () => {

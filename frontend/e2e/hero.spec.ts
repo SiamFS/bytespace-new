@@ -15,10 +15,24 @@ test.describe("hero", () => {
     await expect(page.getByRole("searchbox", { name: "Search courses" })).toBeVisible();
   });
 
-  test("search submits the query to /courses?q=", async ({ page }) => {
-    await page.getByRole("searchbox", { name: "Search courses" }).fill("ui design");
+  test("search filters the landing page's course grid and scrolls to it", async ({ page }) => {
+    await page.getByRole("searchbox", { name: "Search courses" }).fill("design");
     await page.getByRole("search").getByRole("button", { name: "Search" }).click();
-    await expect(page).toHaveURL(/\/courses\?q=ui\+design$/);
+    await expect(page).toHaveURL(/\/\?q=design$/);
+
+    const grid = page.getByRole("list", { name: "Courses" });
+    await expect(page.getByText("2 courses for “design”")).toBeVisible();
+    await expect(grid.getByRole("article")).toHaveCount(2);
+    await expect(grid).toBeInViewport();
+
+    await page.getByRole("button", { name: "Clear search" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByText("2 courses for “design”")).toHaveCount(0);
+  });
+
+  test("a search with no results explains it", async ({ page }) => {
+    await page.goto("/?q=underwater+basket");
+    await expect(page.getByText("No courses match “underwater basket”.")).toBeVisible();
   });
 
   test("student photo loads", async ({ page }) => {

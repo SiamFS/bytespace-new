@@ -48,6 +48,39 @@ describe("AuthNav", () => {
     expect(onNavigate).toHaveBeenCalled();
   });
 
+  it("switches to the guest links immediately, before the server answers", async () => {
+    let finishLogout!: (response: Response) => void;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) =>
+        url === "/api/auth/logout"
+          ? new Promise<Response>((resolve) => (finishLogout = resolve))
+          : Promise.resolve(Response.json({ user: jamie })),
+      ),
+    );
+    renderWithProviders(<AuthNav variant="bar" />);
+    await userEvent.click(await screen.findByRole("button", { name: "Log out" }));
+
+    // The request is still pending — the navbar doesn't wait for it.
+    expect(await screen.findByRole("link", { name: "Sign In" })).toBeInTheDocument();
+    finishLogout(new Response(null, { status: 204 }));
+  });
+
+  it("restores the signed-in state if logging out fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        url === "/api/auth/logout"
+          ? Response.json({ error: { code: "INTERNAL_ERROR", message: "x" } }, { status: 500 })
+          : Response.json({ user: jamie }),
+      ),
+    );
+    renderWithProviders(<AuthNav variant="bar" />);
+    await userEvent.click(await screen.findByRole("button", { name: "Log out" }));
+    expect(await screen.findByRole("button", { name: "Log out" })).toBeInTheDocument();
+    expect(screen.getByText(/Hi, Jamie/)).toBeInTheDocument();
+  });
+
   it("renders list items for the mobile menu", async () => {
     mockApi(null);
     const { container } = renderWithProviders(
