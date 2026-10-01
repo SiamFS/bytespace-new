@@ -93,7 +93,8 @@ if (!env.DATABASE_URL || !(await reachable(env.DATABASE_URL))) {
       "Set DATABASE_URL in backend/.env to a database you can use, either:",
       "  • a free Neon database (https://neon.tech → Connection string), or",
       "  • a local PostgreSQL install, e.g. postgresql://postgres:<password>@localhost:5432/bytespace",
-      "Then run this again. (With Docker instead: node scripts/docker-up.mjs)",
+      "  • or the Docker database (the default URL): start Docker Desktop, then `docker compose up -d postgres redis`",
+      "Then run this again. (Or everything in Docker: node scripts/docker-up.mjs)",
     ].join("\n"),
   );
 }
