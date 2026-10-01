@@ -52,13 +52,16 @@ export function AuthNav({ variant, asListItems = false, onNavigate }: AuthNavPro
         Hi, {firstName}
       </Item>
       <Item className={wrapper}>
+        {/* Optimistic (useLogout): this button is replaced by the guest links right away. */}
         <button
           type="button"
-          onClick={() => logout.mutate(undefined, { onSuccess: onNavigate })}
-          disabled={logout.isPending}
-          className={cn(className, "cursor-pointer text-left disabled:opacity-60")}
+          onClick={() => {
+            logout.mutate();
+            onNavigate?.();
+          }}
+          className={cn(className, "cursor-pointer text-left")}
         >
-          {logout.isPending ? "Logging out…" : "Log out"}
+          Log out
         </button>
       </Item>
     </>

@@ -1,8 +1,20 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { categoryRows, courses } from "@/data/courses";
-import { CourseBrowser } from "./CourseBrowser";
+import { CourseBrowser, matchesSearch } from "./CourseBrowser";
+
+// The hero search arrives as ?q= in the URL.
+const nav = vi.hoisted(() => ({ search: new URLSearchParams(), replace: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: nav.replace }),
+  useSearchParams: () => nav.search,
+}));
+beforeEach(() => {
+  nav.search = new URLSearchParams();
+  nav.replace.mockReset();
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
 const cardTitles = () => screen.queryAllByRole("heading", { level: 3 }).map((h) => h.textContent);
 
@@ -57,4 +69,40 @@ describe("CourseBrowser", () => {
     await user.click(screen.getByRole("button", { name: "Show featured courses" }));
     expect(cardTitles()).toHaveLength(6);
   });
+
+  describe("hero search (?q=)", () => {
+    it("filters the grid by title, creator or category and scrolls to it", async () => {
+      nav.search = new URLSearchParams("q=design");
+      render(<CourseBrowser />);
+      expect(await screen.findByText("2 courses for “design”")).toBeInTheDocument();
+      expect(cardTitles()).toEqual(["Learn Figma from Basic", "Build Digital Asset"]);
+      expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    });
+
+    it("explains when nothing matches, and clears the search", async () => {
+      nav.search = new URLSearchParams("q=underwater%20basket");
+      const user = userEvent.setup();
+      render(<CourseBrowser />);
+      expect(await screen.findByText("No courses match “underwater basket”.")).toBeInTheDocument();
+      await user.click(screen.getAllByRole("button", { name: "Clear search" })[0]!);
+      expect(nav.replace).toHaveBeenCalledWith("/", { scroll: false });
+    });
+
+    it("does nothing without a search", () => {
+      render(<CourseBrowser />);
+      expect(screen.queryByRole("button", { name: "Clear search" })).not.toBeInTheDocument();
+      expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+    });
+  });
 });
+
+describe("matchesSearch", () => {
+  it("needs every word, in any order and case", () => {
+    const figma = courses[0]!;
+    expect(matchesSearch(figma, "FIGMA basic")).toBe(true);
+    expect(matchesSearch(figma, "purepearl")).toBe(true);
+    expect(matchesSearch(figma, "ui/ux")).toBe(true);
+    expect(matchesSearch(figma, "figma cooking")).toBe(false);
+  });
+});
+

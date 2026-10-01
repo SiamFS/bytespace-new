@@ -23,10 +23,24 @@ export function useSetSessionUser() {
   return (user: User | null) => queryClient.setQueryData<Session>(SESSION_KEY, { user });
 }
 
+/**
+ * Log out optimistically (TanStack Query "Optimistic Updates — via the cache"): the navbar shows
+ * the guest links at once instead of a disabled "Logging out…" button while the request makes
+ * its round trip (~1–2s to the API, more on a cold start). If the request fails, the signed-in
+ * state comes back, since the cookie (HttpOnly — only the server can clear it) is still there.
+ */
 export function useLogout() {
-  const setUser = useSetSessionUser();
   return useMutation({
     mutationFn: logout,
-    onSuccess: () => setUser(null),
+    onMutate: async (_variables, context) => {
+      // Don't let an in-flight /me answer put the user back.
+      await context.client.cancelQueries({ queryKey: SESSION_KEY });
+      const previous = context.client.getQueryData<Session>(SESSION_KEY);
+      context.client.setQueryData<Session>(SESSION_KEY, { user: null });
+      return { previous };
+    },
+    onError: (_error, _variables, onMutateResult, context) => {
+      if (onMutateResult?.previous) context.client.setQueryData(SESSION_KEY, onMutateResult.previous);
+    },
   });
 }
