@@ -62,7 +62,7 @@ export const footerColumns: FooterColumn[] = [
 ];
 
 export const legalLinks: NavItem[] = [
-  { label: "Privacy Policy", href: "/privacy", placeholder: true },
-  { label: "Terms of Service", href: "/terms", placeholder: true },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
   { label: "Cookies Settings", href: "/cookies", placeholder: true },
 ];
