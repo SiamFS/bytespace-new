@@ -1,6 +1,8 @@
-# Local development stack.
-#   docker compose up -d postgres redis  → Postgres + Redis (run the API with `npm run dev` in backend/)
-#   docker compose up --build            → Postgres + Redis + the backend container (production image)
+# Local stack — the whole app in Docker, or just the databases.
+#   node scripts/docker-up.mjs          → starts Docker Desktop if needed, then everything below (one command)
+#   docker compose up -d --build --wait → Postgres + Redis + API + website (http://localhost:3000)
+#   docker compose up -d postgres redis → only the databases (run `npm run dev` in backend/ and frontend/)
+#   docker compose down                 → stop (add -v to also delete the database volume)
 
 # Project name (defaults to the folder name). Shown in Docker Desktop and used to prefix
 # the network and volumes: bytespace_default, bytespace_postgres-data.
@@ -49,14 +51,24 @@ services:
     container_name: bytespace-backend
     ports:
       - "4000:4000"
+    # Optional: your backend/.env adds GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (Google sign-in).
+    # `environment` below wins over it (Compose docs), so the container always uses the
+    # Compose database and Redis, never the localhost URLs from that file.
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
       NODE_ENV: production
       PORT: "4000"
       # Service names are the hostnames on the Compose network.
       DATABASE_URL: postgresql://bytespace:bytespace@postgres:5432/bytespace?schema=public
+      DIRECT_URL: postgresql://bytespace:bytespace@postgres:5432/bytespace?schema=public
       REDIS_URL: redis://redis:6379
+      # The website origin. Also the base of the Google redirect URI:
+      # http://localhost:3000/api/auth/google/callback
       CORS_ORIGINS: http://localhost:3000
-      TRUST_PROXY: "0"
+      # Requests come from the website container (one hop).
+      TRUST_PROXY: "1"
       LOG_LEVEL: info
       # Local-only secret. Production sets a real one in the host's environment settings.
       JWT_SECRET: local-compose-secret-change-me-32-plus-chars
@@ -64,6 +76,20 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # The website proxies /api/* to this (read at build time).
+        API_URL: http://backend:4000
+    image: bytespace-frontend
+    container_name: bytespace-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
         condition: service_healthy
 
 volumes:

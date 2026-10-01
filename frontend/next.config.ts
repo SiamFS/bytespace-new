@@ -13,6 +13,9 @@ if (!/^https?:\/\/[^/]+$/.test(apiUrl)) {
 }
 
 const nextConfig: NextConfig = {
+  // Docker only (frontend/Dockerfile sets DOCKER_BUILD=1): a self-contained server in
+  // .next/standalone, per the Next.js `output` docs. Vercel builds keep the default output.
+  output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
   images: {
     // E2E only (E2E=1 is set by Playwright's webServer and the CI job). `next start`'s image
     // optimizer hangs on an image whose first optimization request was aborted, and E2E tests

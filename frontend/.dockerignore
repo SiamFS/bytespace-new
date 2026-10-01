@@ -1,0 +1,14 @@
+node_modules
+.next
+coverage
+test-results
+playwright-report
+blob-report
+.env
+.env.*
+!.env.example
+*.log
+# Fetched during the image build (font licence: never copied from a checkout)
+src/app/fonts/*.woff2
+Dockerfile
+.dockerignore
