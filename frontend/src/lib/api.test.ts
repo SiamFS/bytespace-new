@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, postJson } from "./api";
+import { ApiError, getJson, postJson } from "./api";
 import { authErrorMessages } from "./auth/api";
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
@@ -78,6 +78,35 @@ describe("authErrorMessages", () => {
     expect(authErrorMessages(new Error("boom"), "login").form).toBe("Something went wrong. Please try again.");
     expect(authErrorMessages(new ApiError(500, "INTERNAL_ERROR", "x"), "login").form).toBe(
       "Something went wrong. Please try again.",
+    );
+  });
+});
+
+describe("postJson / getJson edge cases", () => {
+  it("treats a non-JSON 200 (e.g. a host's 'waking up' page) as BAD_RESPONSE, never success", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("<html>Service waking up…</html>", { status: 200, headers: { "Content-Type": "text/html" } })),
+    );
+    await expect(postJson("/api/auth/login", {})).rejects.toMatchObject({ code: "BAD_RESPONSE", status: 200 });
+  });
+
+  it("returns undefined for 204 No Content (logout)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
+    await expect(postJson("/api/auth/logout", {})).resolves.toBeUndefined();
+  });
+
+  it("getJson never uses the browser cache and sends no body", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(json(200, { user: null }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(getJson("/api/auth/me")).resolves.toEqual({ user: null });
+    expect(fetchMock.mock.calls[0]![1]).toMatchObject({ method: "GET", cache: "no-store", credentials: "same-origin" });
+    expect(fetchMock.mock.calls[0]![1].body).toBeUndefined();
+  });
+
+  it("explains BAD_RESPONSE as the server starting up", () => {
+    expect(authErrorMessages(new ApiError(200, "BAD_RESPONSE", "x"), "login").form).toBe(
+      "The server is starting up. Please try again in a moment.",
     );
   });
 });

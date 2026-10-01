@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Request schemas for /api/auth. Same rules as the frontend forms
  * (frontend/src/lib/auth/schemas.ts); both sides run the shared cases in
- * test/fixtures/auth-validation-cases.json, so CI fails if they ever drift apart.
+ * frontend/src/lib/auth/auth-validation-cases.json, so CI fails if they ever drift apart.
  */
 
 /** bcrypt only uses the first 72 bytes of a password — longer ones would be cut silently. */

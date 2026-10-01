@@ -28,6 +28,13 @@ const EnvSchema = z.object({
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   // Sign-ups allowed per IP per hour. Raised only for automated full-stack test runs.
   REGISTER_LIMIT_PER_HOUR: z.coerce.number().int().min(1).default(5),
+  // Set to "1" by Vercel at runtime.
+  VERCEL: z.string().optional(),
+}).superRefine((value, ctx) => {
+  // Vercel can run several function instances at once — in-memory rate limits wouldn't be shared.
+  if (value.VERCEL === "1" && !value.REDIS_URL) {
+    ctx.addIssue({ code: "custom", path: ["REDIS_URL"], message: "REDIS_URL is required on Vercel (rate limits must be shared)" });
+  }
 });
 
 export type Env = z.infer<typeof EnvSchema>;

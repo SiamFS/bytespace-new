@@ -56,7 +56,7 @@ Every error uses one shape: `{ "error": { "code": "NOT_FOUND", "message": "…",
 - **CSRF:** SameSite=Lax, JSON-only writes, and the `Origin` header (when present) must be in `CORS_ORIGINS`.
 - **Rate limits** (Redis, fixed window): login 5/min per IP + email and 20/min per IP; register
   `REGISTER_LIMIT_PER_HOUR` per IP. If Redis is down the request is allowed and the error logged.
-- **Validation** rules match the frontend's: both test suites run `test/fixtures/auth-validation-cases.json`.
+- **Validation** rules match the frontend's: both test suites run `frontend/src/lib/auth/auth-validation-cases.json`.
 
 ## Structure
 
@@ -84,4 +84,17 @@ See `.env.example`. The server refuses to start if a variable is missing or inva
   only; it is not access control. In production the frontend calls the API through its own `/api` rewrite, so
   requests are same-origin.
 - `TRUST_PROXY` — number of reverse proxies in front of the API, so `req.ip` is the real client (rate limits key on it).
-- `JWT_SECRET` — required, 32+ characters. `REDIS_URL` — optional (`rediss://…` for Upstash). `BCRYPT_ROUNDS` — default 12.
+- `DATABASE_URL` — used by the app (Neon: the pooled `-pooler` host). `DIRECT_URL` — optional, used only by `prisma migrate` (Neon: the direct host; migrations can't run through PgBouncer). Falls back to `DATABASE_URL`.
+- `JWT_SECRET` — required, 32+ characters. `REDIS_URL` — optional locally, required on Vercel (`rediss://…` for Upstash). `BCRYPT_ROUNDS` — default 12.
+
+## Deploy (Vercel)
+
+The API runs on Vercel as its own project (Root Directory `backend`), separate from the frontend project. Vercel's
+Express preset picks up `index.ts`, which default-exports the app; it becomes one Vercel Function (Fluid compute).
+`vercel.json` pins the function region to `sin1` (Singapore, next to the Neon and Upstash databases) and runs
+`prisma migrate deploy` before the build on production deployments only. `DIRECT_URL` must be set for that step.
+
+- `REDIS_URL` is **required** on Vercel: several function instances can run at once, so in-memory rate limits
+  would not be shared between them.
+- Docker (`Dockerfile`, `docker-compose.yml`) is for local development and CI; Vercel doesn't use it.
+- The frontend project's `API_URL` points at this project's production URL.

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Validation rules for the auth forms. The API validates with the same rules
- * (backend/src/schemas/auth.schema.ts); both run backend/test/fixtures/auth-validation-cases.json.
+ * (backend/src/schemas/auth.schema.ts); both run ./auth-validation-cases.json.
  */
 
 /** bcrypt only uses the first 72 bytes of a password (bcrypt README) — longer ones would be cut silently. */

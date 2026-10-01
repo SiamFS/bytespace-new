@@ -46,8 +46,15 @@ export function createApp(overrides: Partial<AppDeps> = {}) {
   app.use(
     pinoHttp({
       logger,
-      // Health probes run every few seconds on Render — don't flood the logs with them.
+      // Health probes (Docker HEALTHCHECK, uptime monitors) run often — don't flood the logs with them.
       autoLogging: { ignore: (req) => req.url?.startsWith("/api/health") ?? false },
+      // With LOG_LEVEL=debug, also log how Express resolved the client address — used once after
+      // deploying to set TRUST_PROXY to the real proxy hop count (Vercel).
+      customProps: (req) => {
+        if (!logger.isLevelEnabled("debug")) return {};
+        const { ip, ips } = req as typeof req & { ip?: string; ips?: string[] };
+        return { client: { ip, ips, forwardedFor: req.headers["x-forwarded-for"] } };
+      },
       // One compact line per request (the default dumps every header).
       serializers: {
         req: (req: { id: unknown; method: string; url: string }) => ({ id: req.id, method: req.method, url: req.url }),

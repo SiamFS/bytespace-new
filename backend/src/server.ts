@@ -16,7 +16,7 @@ const server = app.listen(env.PORT, (error) => {
 });
 
 /**
- * Graceful shutdown (Express guide): Render sends SIGTERM on every deploy. Stop accepting
+ * Graceful shutdown (Express guide): Docker sends SIGTERM on stop. Stop accepting
  * connections, let in-flight requests finish, close the DB pool, then exit. A timer forces
  * the exit if something hangs.
  */

@@ -42,6 +42,9 @@ export function authErrorMessages<Field extends string>(error: unknown, formType
     }
     case "TIMEOUT":
       return { form: "The server took too long to respond. Please try again." };
+    case "BAD_RESPONSE":
+      // Usually the free-tier API still waking up (its placeholder page, not our JSON).
+      return { form: "The server is starting up. Please try again in a moment." };
     case "NETWORK_ERROR":
       return { form: "Can't reach the server. Check your connection and try again." };
     default:
