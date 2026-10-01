@@ -10,9 +10,23 @@ email/password sign-up and login and **Google sign-in**, backed by a real API an
 | | |
 |---|---|
 | Landing page (required) | ✅ Every section of the Figma "Home" frame, matched by measurement at 1440px |
-| Login + Sign up (bonus) | ✅ The Figma frames, **fully working** — real accounts, sessions, Google sign-in |
+| Login + Sign up (bonus) | ✅ The Figma frames, **fully working** — real accounts, email verification, Google sign-in |
 | Responsive | ✅ Phone, tablet, laptop (Figma is desktop-only, so these layouts are ours) |
 | Tests | ✅ Unit, component, API, end-to-end, accessibility — run in CI on every pull request |
+
+### Try it in 1 minute
+1. Open the **[live site](https://bytespace-new-taupe.vercel.app)** — the landing page. Try the hero search
+   (e.g. "design") and the category chips; resize the window or open it on a phone.
+2. **Sign up** at [/register](https://bytespace-new-taupe.vercel.app/register) with a real email address, then open
+   the verification email (**check Spam** — see the notes) and you're signed in.
+   No time for email? **Login → "G" (Continue with Google)** signs you in straight away.
+3. Any unknown address, e.g. [/abc](https://bytespace-new-taupe.vercel.app/abc), shows the Figma 404 page.
+
+**Contents:** [Screenshots](#screenshots) · [1. Frontend](#1-frontend) ·
+[2. Authentication](#2-authentication--it-really-works-not-just-the-ui) · [3. Backend](#3-backend) ·
+[4. Database and hosting](#4-database-and-hosting) · [5. Run it locally](#5-run-it-locally) ·
+[6. Tests and CI](#6-tests-and-ci) · [7. Project structure](#7-project-structure) ·
+[8. Notes for reviewers](#8-notes-for-reviewers)
 
 ---
 
@@ -79,6 +93,7 @@ email/password sign-up and login and **Google sign-in**, backed by a real API an
 |---|---|
 | `/` | Landing page |
 | `/login`, `/register` | Figma Login / Register frames, working forms (`/signup` redirects to `/register`) |
+| `/verify-email` | Opened from the verification email: verifies and signs in (our design, same style) |
 | `/privacy`, `/terms` | Privacy policy and terms (needed by Google sign-in; linked from the footer) |
 | any other URL | The Figma "404 Not Found" frame |
 
@@ -90,8 +105,8 @@ axe in the end-to-end tests.
 ### Frontend tests
 | Kind | Tool | What |
 |---|---|---|
-| Unit / component (35 files) | Vitest + Testing Library | UI primitives, every section, forms (validation, server errors, slow server), session/navbar, search filtering, API client |
-| End-to-end (10 spec files) | Playwright — desktop 1440 + phone | Navigation, hero search, chip filtering, login/register flows, layout vs. Figma coordinates, no overflow, 404 |
+| Unit / component (200+ tests) | Vitest + Testing Library | UI primitives, every section, forms (validation, server errors, slow server), email verification screens, session/navbar, search filtering, API client |
+| End-to-end (110+ tests) | Playwright — desktop 1440 + phone | Navigation, hero search, chip filtering, login/register/verify flows, layout vs. Figma coordinates, no overflow, 404 |
 | Accessibility | axe-core in Playwright | Every page, WCAG A/AA rules |
 | Smoke | Playwright `@smoke` | Runs against the live site (`BASE_URL=…`) |
 
@@ -132,9 +147,10 @@ The test cases were written with the help of agentic coding tools, then reviewed
 Layered structure (routes → controllers → services → Prisma), environment validated at startup, one error
 format for every response. Details, security notes and configuration: [`backend/README.md`](backend/README.md).
 
-**Backend tests (Vitest + Supertest, 9 files):** API tests against a real PostgreSQL test database and Redis —
-sign-up, login, sessions, logout, validation, rate limits, cross-site blocking, Google sign-in (Google mocked:
-new user, returning user, account linking, forged state, cancel), error handling.
+**Backend tests (Vitest + Supertest, 100+ tests):** API tests against a real PostgreSQL test database and Redis —
+sign-up, email verification (used / expired / forged links, resend, unverified login refused, Brevo request),
+login, sessions, logout, validation, rate limits, cross-site blocking, Google sign-in (Google mocked: new user,
+returning user, account linking, forged state, cancel), error handling.
 
 ---
 
@@ -155,7 +171,7 @@ Browser ──> Vercel: website (Next.js) ──/api/* rewrite──> Vercel: AP
 
 ## 5. Run it locally
 
-You need **Node.js 22.12+** and, for option A, **Docker Desktop**.
+You need **Node.js 22.12+** and, for option A, **Docker Desktop** (with Docker Compose 2.20 or newer — any recent version).
 
 ```bash
 git clone https://github.com/SiamFS/bytespace-new.git
@@ -207,10 +223,21 @@ stops and tells you what to set.
 
 ### C. Manually
 
+Two terminals, both starting in the repo folder:
+
 ```bash
-docker compose up -d postgres redis          # or your own PostgreSQL / Redis
-cd backend  && cp .env.example .env && npm ci && npx prisma migrate deploy && npm run dev
-cd frontend && npm ci && npm run dev         # second terminal
+# Terminal 1 — databases + API (http://localhost:4000)
+docker compose up -d postgres redis          # or your own PostgreSQL / Redis (then edit DATABASE_URL)
+cd backend
+cp .env.example .env                         # Windows cmd: copy .env.example .env
+npm ci
+npx prisma migrate deploy
+npm run dev
+
+# Terminal 2 — website (http://localhost:3000)
+cd frontend
+npm ci
+npm run dev
 ```
 
 ### Google sign-in locally (optional)
@@ -230,6 +257,7 @@ npm run lint && npm run typecheck
 npm test                 # unit + component (Vitest)
 npm run test:e2e         # builds, then Playwright E2E + axe (desktop + phone)
 BASE_URL=https://bytespace-new-taupe.vercel.app npm run test:smoke
+#   Windows PowerShell: $env:BASE_URL="https://bytespace-new-taupe.vercel.app"; npm run test:smoke
 
 # backend/  (needs: docker compose up -d postgres redis)
 npm run lint && npm run typecheck
@@ -238,7 +266,8 @@ npm test                 # unit + API tests (real PostgreSQL + Redis)
 
 **GitHub Actions** runs three jobs on every pull request: **frontend** (lint, types, unit, build, E2E + axe),
 **backend** (lint, types, tests with PostgreSQL + Redis services, build, Docker image) and **full stack**
-(real API + website in a browser: sign up → session → logout → login).
+(real API + website in a browser: sign up → login refused until verified → verification link → signed in →
+logout → login).
 
 ---
 
