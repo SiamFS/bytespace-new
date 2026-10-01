@@ -15,8 +15,9 @@ export function NotFoundSection() {
         <p className="font-heading text-[10rem] leading-none font-semibold tracking-[-0.01em] text-gradient-404 md:text-[18rem] lg:text-display">
           404
         </p>
-        {/* Drawn over the bottom of the "404" (Figma: text block starts 119px above its bottom edge). */}
-        <div className="relative -mt-10 flex max-w-[935px] flex-col items-center gap-8 md:-mt-[72px] lg:-mt-[119px]">
+        {/* Drawn over the bottom of the "404" (Figma: text block starts 119px above its bottom edge).
+            Phones: below it instead — at this size the overlap made the heading hard to read. */}
+        <div className="relative mt-2 flex max-w-[935px] flex-col items-center gap-8 md:-mt-[72px] lg:-mt-[119px]">
           <h1 id="not-found-title" className="font-heading text-heading-l-mobile text-white md:text-heading-l">
             The page you are looking for doesn’t exist
           </h1>

@@ -31,12 +31,14 @@ test.describe("hero", () => {
     test.skip(isMobile, "desktop layout only");
     await expect(hero(page).getByRole("progressbar", { name: "Learning Progress" })).toBeVisible();
     await expect(hero(page).getByText("UI/UX Design")).toBeVisible();
-    await expect(hero(page).getByText("Happy Students")).toBeVisible();
+    await expect(hero(page).getByText("Happy Students").filter({ visible: true })).toHaveCount(1);
   });
 
   test("mobile: decorative stage is hidden and nothing overflows", async ({ page, isMobile }) => {
     test.skip(!isMobile, "mobile layout only");
     await expect(hero(page).getByRole("progressbar", { name: "Learning Progress" })).toBeHidden();
+    // Our mobile design keeps one stat card over the photo.
+    await expect(hero(page).getByText("Happy Students").filter({ visible: true })).toHaveCount(1);
     const [scrollWidth, innerWidth] = await page.evaluate(() => [
       document.documentElement.scrollWidth,
       window.innerWidth,

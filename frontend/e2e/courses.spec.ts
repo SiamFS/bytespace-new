@@ -5,13 +5,20 @@ test.describe("courses and learning paths", () => {
     await page.goto("/");
   });
 
-  test("shows six course cards under Featured", async ({ page }) => {
+  test("shows six course cards under Featured", async ({ page, isMobile }) => {
     const grid = page.getByRole("list", { name: "Courses" });
-    await expect(grid.getByRole("article")).toHaveCount(6);
     await expect(page.getByRole("button", { name: "Featured" })).toHaveAttribute("aria-pressed", "true");
+    if (isMobile) {
+      // Phones show three until "Show all" (our design).
+      await expect(grid.getByRole("article")).toHaveCount(3);
+      await page.getByRole("button", { name: "Show all 6 courses" }).click();
+    } else {
+      await expect(page.getByRole("button", { name: "Show all 6 courses" })).toBeHidden();
+    }
+    await expect(grid.getByRole("article")).toHaveCount(6);
   });
 
-  test("category chips filter the grid, with an empty state", async ({ page }) => {
+  test("category chips filter the grid, with an empty state", async ({ page, isMobile }) => {
     await page.getByRole("button", { name: "UI/UX Design" }).click();
     const grid = page.getByRole("list", { name: "Courses" });
     await expect(grid.getByRole("article")).toHaveCount(1);
@@ -21,7 +28,30 @@ test.describe("courses and learning paths", () => {
     await expect(page.getByText("No courses in Music yet.")).toBeVisible();
 
     await page.getByRole("button", { name: "Show featured courses" }).click();
-    await expect(grid.getByRole("article")).toHaveCount(6);
+    await expect(grid.getByRole("article")).toHaveCount(isMobile ? 3 : 6);
+  });
+
+  test("mobile: chips are one swipeable row", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "mobile layout only");
+    const group = page.getByRole("group", { name: "Course categories" });
+    const [scrollWidth, clientWidth] = await group.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+    expect(scrollWidth).toBeGreaterThan(clientWidth);
+    const tops = await group.getByRole("button").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+    expect(new Set(tops).size).toBe(1);
+  });
+
+  test("course image badges stay on one line inside the image", async ({ page }) => {
+    const card = page.getByRole("list", { name: "Courses" }).getByRole("article").first();
+    await card.scrollIntoViewIfNeeded();
+    const result = await card.evaluate((article) => {
+      const image = article.querySelector(".\\@container")!.getBoundingClientRect();
+      return Array.from(article.querySelectorAll(".\\@container li span")).map((badge) => {
+        const box = badge.getBoundingClientRect();
+        return { oneLine: box.height < 30, inside: box.right <= image.right + 0.5 };
+      });
+    });
+    expect(result).toHaveLength(3);
+    for (const badge of result) expect(badge).toEqual({ oneLine: true, inside: true });
   });
 
   test("course images load", async ({ page }) => {
@@ -33,6 +63,7 @@ test.describe("courses and learning paths", () => {
   });
 
   test("long course titles stay on one line (truncated on desktop)", async ({ page, isMobile }) => {
+    if (isMobile) await page.getByRole("button", { name: "Show all 6 courses" }).click();
     const title = page.getByRole("heading", { name: "Balancing Productivity and Self-Care" });
     const [lineHeight, height, overflowing] = await title.evaluate((el) => [
       parseFloat(getComputedStyle(el).lineHeight),

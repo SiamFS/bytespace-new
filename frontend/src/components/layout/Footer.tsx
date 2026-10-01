@@ -15,9 +15,9 @@ const linkClass =
  */
 export function Footer() {
   return (
-    <footer className="border-t border-neutral-200 bg-white pt-16 pb-12 lg:pt-[70px]">
-      <Container className="flex flex-col gap-16 lg:gap-[130px]">
-        <div className="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-[92px]">
+    <footer className="border-t border-neutral-200 bg-white pt-16 pb-12 xl:pt-[70px]">
+      <Container className="flex flex-col gap-16 xl:gap-[130px]">
+        <div className="flex flex-col gap-12 xl:flex-row xl:justify-between xl:gap-[92px]">
           <div className="flex max-w-[528px] flex-col gap-[45px]">
             {/* 18px: Figma measures 16px from the 37px logo group; the SVG itself is 35px. */}
             <div className="flex flex-col gap-[18px]">
@@ -31,12 +31,12 @@ export function Footer() {
             <NewsletterForm />
           </div>
 
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:flex">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3 xl:flex">
             {footerColumns.map((column) => (
-              <div key={column.title} className="lg:w-[167px]">
+              <div key={column.title} className="xl:w-[167px]">
                 {/* Invisible in Figma (no fill) — kept for screen readers. */}
                 <h2 className="sr-only">{column.title}</h2>
-                <ul className="flex flex-col gap-4 text-body-s lg:pt-12">
+                <ul className="flex flex-col gap-4 text-body-s xl:pt-12">
                   {column.links.map((link) => (
                     <li key={link.label}>
                       <Link
@@ -54,7 +54,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-6 border-t border-neutral-200 pt-6 lg:pt-[22px]">
+        <div className="flex flex-col gap-6 border-t border-neutral-200 pt-6 xl:pt-[22px]">
           <div className="flex flex-col gap-4 text-body-xs sm:flex-row sm:items-center sm:justify-between">
             <p className="text-neutral-950">@ 2023 ByteSpace. All rights reserved.</p>
             <ul className="flex flex-wrap gap-6">

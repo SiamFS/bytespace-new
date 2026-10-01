@@ -47,3 +47,31 @@ describe("MobileMenu", () => {
     expect(screen.getByRole("button", { name: "Open menu" })).toHaveAttribute("aria-expanded", "false");
   });
 });
+
+describe("MobileMenu extras", () => {
+  it("shows the cart link next to the menu button", () => {
+    renderWithProviders(<MobileMenu />);
+    expect(screen.getByRole("link", { name: "Cart" })).toBeInTheDocument();
+  });
+
+  it("closes when the dimmed page behind it is tapped", async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithProviders(<MobileMenu />);
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+
+    const backdrop = container.querySelector<HTMLElement>(".fixed.inset-0");
+    expect(backdrop).not.toBeNull();
+    await user.click(backdrop!);
+    expect(screen.getByRole("button", { name: "Open menu" })).toHaveAttribute("aria-expanded", "false");
+    expect(container.querySelector(".fixed.inset-0")).toBeNull();
+  });
+
+  it("locks page scrolling only while open", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<MobileMenu />);
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    expect(document.body.style.overflow).toBe("hidden");
+    await user.click(screen.getByRole("button", { name: "Close menu" }));
+    expect(document.body.style.overflow).toBe("");
+  });
+});
