@@ -65,8 +65,38 @@ test.describe("auth pages", () => {
   });
 });
 
+test.describe("desktop: the Figma frame fits the window", () => {
+  test.skip(({ isMobile }) => isMobile, "desktop layout only");
+
+  for (const [width, height] of [
+    [1440, 900],
+    [1366, 768],
+  ]) {
+    test(`${width}×${height}: no scrollbar, frame scaled to the window height`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await gotoReady(page, "/login");
+      const [scrollHeight, clientHeight] = await page.evaluate(() => [
+        document.documentElement.scrollHeight,
+        document.documentElement.clientHeight,
+      ]);
+      expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
+      // The 784px card keeps its Figma proportions at the window/1024 scale.
+      const card = (await page.getByRole("region", { name: "Welcome Back" }).boundingBox())!;
+      expect(Math.abs(card.height - (784 * height) / 1024)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test("the logo goes to the home page", async ({ page }) => {
+    await gotoReady(page, "/login");
+    await page.getByRole("link", { name: "ByteSpace home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
 test.describe("desktop layout matches Figma (1440)", () => {
   test.skip(({ isMobile }) => isMobile, "desktop layout only");
+  // The Figma frame is 1440×1024 — at that size the stage isn't scaled.
+  test.use({ viewport: { width: 1440, height: 1024 } });
 
   const near = (actual: number, expected: number, tolerance = 2) =>
     expect(Math.abs(actual - expected), `${actual} vs ${expected}`).toBeLessThanOrEqual(tolerance);

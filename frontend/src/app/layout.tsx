@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Providers } from "@/components/layout/Providers";
+import { authStageScaleScript } from "@/lib/authStageScale";
 import { poppins, satoshi } from "./fonts";
 import "./globals.css";
 
@@ -21,6 +23,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <Providers>{children}</Providers>
+        {/* Fits the desktop login/register frame to short windows (lib/authStageScale.ts). In the
+            root layout because `beforeInteractive` only works here (Next.js Script docs). */}
+        <Script id="auth-stage-scale" strategy="beforeInteractive">
+          {authStageScaleScript}
+        </Script>
       </body>
     </html>
   );
