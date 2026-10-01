@@ -106,6 +106,22 @@ if (env.REDIS_URL && !(await reachable(env.REDIS_URL))) {
   delete runEnv.REDIS_URL;
 }
 
+// ---- ports free? (the Docker containers or another copy of the app may be using them) ----
+const busy = [];
+for (const [port, what] of [[3000, "the website"], [4000, "the API"]]) {
+  if (await reachable(`http://localhost:${port}`)) busy.push(`  • port ${port} (${what})`);
+}
+if (busy.length) {
+  fail(
+    [
+      "These ports are already in use:",
+      ...busy,
+      "Is the app already running? Stop it first — Docker: node scripts/docker-up.mjs --down (or docker compose stop",
+      "frontend backend); another terminal: Ctrl+C. Then run this again.",
+    ].join("\n"),
+  );
+}
+
 // ---- migrations ----
 log("Applying database migrations…");
 const migrate = spawnSync("npx", ["prisma", "migrate", "deploy"], { cwd: backend, stdio: "inherit", shell: isWindows, env: runEnv });

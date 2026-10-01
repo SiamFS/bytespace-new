@@ -168,8 +168,13 @@ waits until all four are healthy, and opens http://localhost:3000. First run tak
 
 > **Docker Desktop must be installed** ([download](https://www.docker.com/products/docker-desktop/)), but you
 > don't need to open it first — the script starts it and waits for it (Windows and macOS; on Linux it starts the
-> Docker service). If it can't, open Docker Desktop yourself, wait until it shows "Engine running", and run the
-> command again.
+> Docker service).
+>
+> **If Docker isn't installed or won't start,** the script says why (with install steps) and then runs the local
+> setup below (option B) instead. Add `--no-fallback` to only show the message.
+>
+> Ports 3000, 4000, 5433 and 6380 must be free — if the app is already running without Docker, the script asks
+> you to stop it first.
 
 ```bash
 node scripts/docker-up.mjs --down     # stop everything (or: docker compose down)
