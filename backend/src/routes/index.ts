@@ -17,6 +17,7 @@ export function createApiRouter(deps: AppDeps) {
       rateLimits: deps.rateLimits,
       allowedOrigins: env.CORS_ORIGINS,
       google: deps.google,
+      mailer: deps.mailer,
     }),
   );
 

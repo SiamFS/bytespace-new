@@ -2,26 +2,39 @@ import { SignJWT } from "jose";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { prisma } from "../src/lib/prisma.js";
-import { FRONTEND_ORIGIN, newUser, sessionCookie, setCookieHeader, testApp, uniqueEmail } from "./helpers.js";
+import { FRONTEND_ORIGIN, newUser, setCookieHeader, signUpVerified, testApp, uniqueEmail } from "./helpers.js";
 
 const post = (app: ReturnType<typeof testApp>, path: string, body: unknown) =>
   request(app).post(path).set("Origin", FRONTEND_ORIGIN).send(body as object);
 
 describe("POST /api/auth/register", () => {
-  it("creates the user, starts a session and never returns the hash", async () => {
+  it("creates an unverified account and sends the verification link — no session yet", async () => {
     const user = newUser();
     const res = await post(testApp(), "/api/auth/register", user);
 
     expect(res.status).toBe(201);
-    expect(res.body.user).toEqual({ id: expect.any(String), name: "Jamie Davis", email: user.email, createdAt: expect.any(String) });
+    // Tests have no email service, so the API hands the link back (never when Brevo is configured).
+    expect(res.body).toEqual({
+      status: "verification_sent",
+      email: user.email,
+      emailSent: false,
+      verificationUrl: expect.stringMatching(/^http:\/\/localhost:3000\/verify-email\?token=[\w-]{43}$/),
+    });
     expect(JSON.stringify(res.body)).not.toMatch(/passwordHash|tokenVersion/);
+    expect(setCookieHeader(res)).toBeUndefined();
+    expect(res.headers["cache-control"]).toBe("no-store");
+    const stored = await prisma.user.findUniqueOrThrow({ where: { email: user.email } });
+    expect(stored.emailVerifiedAt).toBeNull();
+  });
 
+  it("verifying the link starts a session with the usual cookie", async () => {
+    const { res, user } = await signUpVerified(testApp());
+    expect(res.body.user).toEqual({ id: expect.any(String), name: "Jamie Davis", email: user.email, createdAt: expect.any(String) });
     const cookie = setCookieHeader(res)!;
     expect(cookie).toMatch(/HttpOnly/);
     expect(cookie).toMatch(/SameSite=Lax/);
     expect(cookie).toMatch(/Path=\//);
     expect(cookie).toMatch(/Max-Age=604800/);
-    expect(res.headers["cache-control"]).toBe("no-store");
   });
 
   it("stores a bcrypt hash and the normalised email", async () => {
@@ -86,6 +99,8 @@ describe("POST /api/auth/register", () => {
       rateLimits: {
         login: [],
         register: [{ name: "register-ip", limit: 2, windowSeconds: 3600, key: (req) => req.ip ?? "" }],
+        resendVerification: [],
+        verifyEmail: [],
       },
     });
     await post(app, "/api/auth/register", newUser());
@@ -99,8 +114,7 @@ describe("POST /api/auth/register", () => {
 describe("POST /api/auth/login", () => {
   async function registered() {
     const app = testApp();
-    const user = newUser();
-    await post(app, "/api/auth/register", user);
+    const { user } = await signUpVerified(app);
     return { app, user };
   }
 
@@ -135,6 +149,20 @@ describe("POST /api/auth/login", () => {
     expect(Number(res.headers["retry-after"])).toBeLessThanOrEqual(60);
   });
 
+  it("refuses an unverified account — but only once the password is right", async () => {
+    const app = testApp();
+    const user = newUser();
+    await post(app, "/api/auth/register", user);
+
+    const wrong = await post(app, "/api/auth/login", { email: user.email, password: "wrong-pass1" });
+    expect(wrong.status).toBe(401);
+
+    const res = await post(app, "/api/auth/login", user);
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe("EMAIL_NOT_VERIFIED");
+    expect(setCookieHeader(res)).toBeUndefined();
+  });
+
   it("does not count invalid bodies against the limit", async () => {
     const { app, user } = await registered();
     for (let i = 0; i < 6; i++) await post(app, "/api/auth/login", { email: user.email, password: "" });
@@ -146,9 +174,8 @@ describe("POST /api/auth/login", () => {
 describe("GET /api/auth/me and POST /api/auth/logout", () => {
   async function signedIn() {
     const app = testApp();
-    const user = newUser();
-    const res = await post(app, "/api/auth/register", user);
-    return { app, user, cookie: sessionCookie(res), id: res.body.user.id as string };
+    const { user, cookie, id } = await signUpVerified(app);
+    return { app, user, cookie, id };
   }
 
   it("returns the signed-in user", async () => {

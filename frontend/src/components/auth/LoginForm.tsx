@@ -8,6 +8,7 @@ import { authCopy } from "@/data/auth";
 import { login } from "@/lib/auth/api";
 import { loginSchema } from "@/lib/auth/schemas";
 import { FormStatus } from "./FormStatus";
+import { ResendVerification } from "./ResendVerification";
 import { useAuthSubmit } from "./useAuthSubmit";
 import { useGoogleError } from "./useGoogleError";
 
@@ -19,13 +20,14 @@ export function LoginForm() {
     register,
     handleSubmit,
     setError,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
     mode: "onTouched",
   });
-  const { run, formError, slow, submitted } = useAuthSubmit("login", setError, isSubmitting);
+  const { run, formError, errorCode, slow, submitted } = useAuthSubmit("login", setError, isSubmitting);
   const googleError = useGoogleError();
 
   return (
@@ -53,6 +55,8 @@ export function LoginForm() {
       />
       {/* A failed Google sign-in is reported until the form is used instead. */}
       <FormStatus error={formError ?? (submitted ? undefined : googleError)} slow={slow} />
+      {/* Right password, email not verified yet (our design): send the link again. */}
+      {errorCode === "EMAIL_NOT_VERIFIED" && <ResendVerification email={getValues("email").trim().toLowerCase()} />}
       <Button type="submit" disabled={isSubmitting} aria-disabled={isSubmitting} className="self-end">
         {isSubmitting ? copy.pending : copy.submit}
       </Button>

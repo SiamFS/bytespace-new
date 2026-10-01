@@ -221,20 +221,47 @@ test.describe("register form", () => {
     await expect(page.getByLabel("Email")).toHaveAttribute("aria-invalid", "true");
   });
 
-  test("creates the account and goes home", async ({ page }) => {
+  test("creates the account and asks to check the email", async ({ page }) => {
     await page.route("**/api/auth/register", async (route) => {
       expect(route.request().postDataJSON()).toEqual({
         name: "Jamie Davis",
         email: "jamie@example.com",
         password: "secret123",
       });
-      await route.fulfill(json(201, { user: { id: "1" } }));
+      await route.fulfill(json(201, { status: "verification_sent", email: "jamie@example.com", emailSent: true }));
     });
     await page.goto("/register");
     await page.getByLabel("Full Name").fill(" Jamie Davis ");
     await page.getByLabel("Email").fill("JAMIE@example.com");
     await page.getByLabel("Password").fill("secret123");
     await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+    await expect(page).toHaveURL(/\/register$/);
+  });
+});
+
+test.describe("verify email page", () => {
+  test("verifies the link, signs in and goes home", async ({ page }) => {
+    await page.route("**/api/auth/verify-email", (route) =>
+      route.fulfill(json(200, { user: { id: "1", name: "Jamie Davis", email: "jamie@example.com", createdAt: "2026-10-01T00:00:00.000Z" } })),
+    );
+    await page.goto("/verify-email?token=abc");
+    await expect(page.getByText("Email verified — welcome, Jamie!")).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
+  });
+
+  test("explains an expired link", async ({ page }) => {
+    await page.route("**/api/auth/verify-email", (route) =>
+      route.fulfill(json(400, { error: { code: "INVALID_TOKEN", message: "x" } })),
+    );
+    await page.goto("/verify-email?token=old");
+    await expect(page.getByText(/invalid or has expired/)).toBeVisible();
+  });
+
+  test("has no automatically detectable accessibility violations", async ({ page }) => {
+    await page.goto("/verify-email");
+    await expect(page.getByText(/link is incomplete/)).toBeVisible();
+    const results = await makeAxeBuilder(page).analyze();
+    expect(results.violations).toEqual([]);
   });
 });

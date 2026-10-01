@@ -109,6 +109,27 @@ describe("LoginForm", () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/"));
   });
 
+  it("asks to verify the email first, and offers to resend the link", async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url === "/api/auth/login"
+        ? json(403, { error: { code: "EMAIL_NOT_VERIFIED", message: "x" } })
+        : json(200, { status: "sent_if_unverified" }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderWithProviders(<LoginForm />);
+    const user = await fillAndSubmit("Jamie@Example.com", "secret123");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Please verify your email first");
+    expect(router.replace).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Resend verification email" }));
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/auth/resend-verification",
+        expect.objectContaining({ body: JSON.stringify({ email: "jamie@example.com" }) }),
+      ),
+    );
+  });
+
   it("shows one generic message for wrong credentials", async () => {
     vi.stubGlobal(
       "fetch",

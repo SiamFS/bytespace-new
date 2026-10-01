@@ -6,6 +6,7 @@ import { pinoHttp } from "pino-http";
 import { env } from "./config/env.js";
 import { defaultRateLimits, type RateLimitRules } from "./config/rateLimits.js";
 import { createGoogleClient, type GoogleClient } from "./lib/google.js";
+import { createBrevoMailer, createLogMailer, type Mailer } from "./lib/mailer.js";
 import { logger } from "./lib/logger.js";
 import { prisma } from "./lib/prisma.js";
 import { getRateLimitStore } from "./lib/rateLimitStore.js";
@@ -23,6 +24,7 @@ export type AppDeps = {
   rateLimitStore: RateLimitStore;
   rateLimits: RateLimitRules;
   google: GoogleClient;
+  mailer: Mailer;
 };
 
 const defaultDeps = (): AppDeps => ({
@@ -31,6 +33,10 @@ const defaultDeps = (): AppDeps => ({
   rateLimitStore: getRateLimitStore(),
   rateLimits: defaultRateLimits,
   google: createGoogleClient({ clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }),
+  mailer:
+    env.BREVO_API_KEY && env.EMAIL_FROM
+      ? createBrevoMailer({ apiKey: env.BREVO_API_KEY, from: { email: env.EMAIL_FROM, name: env.EMAIL_FROM_NAME } })
+      : createLogMailer(logger),
 });
 
 /**

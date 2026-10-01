@@ -12,16 +12,30 @@ test.use({ mockSession: false });
 test.describe("real auth flow @fullstack", () => {
   test.skip(({ isMobile }) => isMobile, "one browser is enough for the API round trips");
 
-  test("register → signed in → log out → log in", async ({ page, context }) => {
+  test("register → verify email → signed in → log out → log in", async ({ page, context }) => {
     const email = `e2e-${randomUUID()}@example.com`;
 
-    // Register
+    // Register: no session yet, "check your email" instead.
     await page.goto("/register");
     await page.getByLabel("Full Name").fill("Jamie Davis");
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("secret123");
     await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+    expect((await context.cookies()).find((c) => c.name === "session")).toBeUndefined();
+    // This API has no email service (no BREVO_API_KEY), so the page shows the link itself.
+    const verifyHref = await page.getByRole("link", { name: "Verify your email" }).getAttribute("href");
 
+    // Logging in before verifying is refused (right password).
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill("secret123");
+    await page.getByRole("button", { name: "Sign In" }).click();
+    await expect(page.locator("form").getByRole("alert")).toContainText("Please verify your email first");
+
+    // The link verifies, signs in and goes home.
+    await page.goto(new URL(verifyHref!).pathname + new URL(verifyHref!).search);
+    await expect(page.getByText("Email verified — welcome, Jamie!")).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
     const banner = page.getByRole("banner");
     await expect(banner.getByText("Hi, Jamie").filter({ visible: true })).toBeVisible();

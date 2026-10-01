@@ -46,5 +46,13 @@ export const registerSchema = z.object({
     }),
 });
 
+/** POST /verify-email — the token from the emailed link (base64url, 43 chars). */
+export const verifyEmailSchema = z.object({
+  token: z.string("Missing token").min(1, "Missing token").max(200, "Invalid token"),
+});
+
+/** POST /resend-verification. */
+export const resendVerificationSchema = z.object({ email });
+
 export type LoginInput = z.output<typeof loginSchema>;
 export type RegisterInput = z.output<typeof registerSchema>;
