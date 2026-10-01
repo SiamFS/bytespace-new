@@ -247,8 +247,12 @@ docker-compose.yml  PostgreSQL + Redis + API + website
 - **Followed the design even where it's unusual:** the footer newsletter button says "Search" (as in Figma),
   the grey `#82868e` text is below WCAG AA contrast (so only axe's color-contrast rule is turned off), and the
   404 page shows "Home" as active.
-- **Outside the required scope:** course detail pages, creator pages, cart, the Facebook button and footer
-  pages other than Privacy/Terms are placeholders (they show the 404 page). Password reset and email
-  verification are not built.
+- **Outside the required scope:** course detail pages (clicking a course card), creator pages, cart, the
+  Facebook button and footer pages other than Privacy/Terms are placeholders — they show the 404 page.
+  The footer newsletter field validates the email and confirms, but doesn't store it. Password reset isn't built.
+- **To try sign-up:** use a real email address — the verification email (sent with Brevo from a Gmail
+  sender, no own domain) **may land in Spam**. Or use "Continue with Google", which needs no email.
 - The live API runs as a serverless function: the very first request after a quiet period can take a few
   seconds; the site shows a "waking up the server" message if a form waits that long.
+- **How it was built:** every feature on its own branch, merged through pull requests with CI (lint, types,
+  unit, E2E, full-stack) — see the closed PRs.
