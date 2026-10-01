@@ -171,6 +171,16 @@ node scripts/docker-up.mjs
 It starts Docker Desktop if it isn't running, builds and starts **PostgreSQL, Redis, the API and the website**,
 waits until all four are healthy, and opens http://localhost:3000. First run takes a few minutes.
 
+> **Docker Desktop must be installed** ([download](https://www.docker.com/products/docker-desktop/)), but you
+> don't need to open it first — the script starts it and waits for it (Windows and macOS; on Linux it starts the
+> Docker service).
+>
+> **If Docker isn't installed or won't start,** the script says why (with install steps) and then runs the local
+> setup below (option B) instead. Add `--no-fallback` to only show the message.
+>
+> Ports 3000, 4000, 5433 and 6380 must be free — if the app is already running without Docker, the script asks
+> you to stop it first.
+
 ```bash
 node scripts/docker-up.mjs --down     # stop everything (or: docker compose down)
 docker compose logs -f backend        # API logs
@@ -184,8 +194,16 @@ node scripts/dev-local.mjs
 
 Installs the packages, creates `backend/.env` (with a new random secret), applies the database migrations, then
 starts the API (:4000) and the website (:3000) with hot reload. Ctrl+C stops both.
-It needs a **PostgreSQL** database: set `DATABASE_URL` in `backend/.env` to a local PostgreSQL install or a free
-[Neon](https://neon.tech) database. Redis is optional (without it, rate limits are kept in memory).
+It needs a **PostgreSQL** database. Docker isn't required, but the default `DATABASE_URL` in `backend/.env`
+points to the Docker database (`localhost:5433`), so pick one:
+
+- **No Docker:** set `DATABASE_URL` in `backend/.env` to a local PostgreSQL install or a free
+  [Neon](https://neon.tech) database, then run the command.
+- **Docker for the database only:** keep the default and start it first with
+  `docker compose up -d postgres redis` (Docker Desktop must be running for this one).
+
+Redis is optional (without it, rate limits are kept in memory). If the database can't be reached, the script
+stops and tells you what to set.
 
 ### C. Manually
 

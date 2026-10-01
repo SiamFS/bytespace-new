@@ -93,7 +93,8 @@ if (!env.DATABASE_URL || !(await reachable(env.DATABASE_URL))) {
       "Set DATABASE_URL in backend/.env to a database you can use, either:",
       "  • a free Neon database (https://neon.tech → Connection string), or",
       "  • a local PostgreSQL install, e.g. postgresql://postgres:<password>@localhost:5432/bytespace",
-      "Then run this again. (With Docker instead: node scripts/docker-up.mjs)",
+      "  • or the Docker database (the default URL): start Docker Desktop, then `docker compose up -d postgres redis`",
+      "Then run this again. (Or everything in Docker: node scripts/docker-up.mjs)",
     ].join("\n"),
   );
 }
@@ -103,6 +104,22 @@ const runEnv = { ...process.env, ...env, NODE_ENV: "development" };
 if (env.REDIS_URL && !(await reachable(env.REDIS_URL))) {
   log(`Redis isn't reachable at ${env.REDIS_URL} — using in-memory rate limits for this run.`);
   delete runEnv.REDIS_URL;
+}
+
+// ---- ports free? (the Docker containers or another copy of the app may be using them) ----
+const busy = [];
+for (const [port, what] of [[3000, "the website"], [4000, "the API"]]) {
+  if (await reachable(`http://localhost:${port}`)) busy.push(`  • port ${port} (${what})`);
+}
+if (busy.length) {
+  fail(
+    [
+      "These ports are already in use:",
+      ...busy,
+      "Is the app already running? Stop it first — Docker: node scripts/docker-up.mjs --down (or docker compose stop",
+      "frontend backend); another terminal: Ctrl+C. Then run this again.",
+    ].join("\n"),
+  );
 }
 
 // ---- migrations ----
