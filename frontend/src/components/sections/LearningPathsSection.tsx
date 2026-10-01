@@ -19,13 +19,13 @@ export function LearningPathsSection() {
           description="At Bytespace, we believe in empowering individuals through knowledge. Our diverse range of courses spans various fields, ensuring there's something for everyone. Unleash your potential and explore our carefully curated categories."
           className="mx-auto max-w-[917px]"
         />
-        <ul className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:flex lg:justify-center lg:gap-10">
+        <ul className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6 xl:flex xl:justify-center xl:gap-10">
           {learningPaths.map(({ label, slug, Icon }) => (
             <li key={slug}>
               <Link
                 href={`/courses?category=${slug}`}
                 prefetch={false}
-                className="flex aspect-square flex-col items-center justify-center gap-3 rounded-3xl border border-neutral-200 bg-white transition-colors hover:border-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 lg:size-[167px]"
+                className="flex aspect-square flex-col items-center justify-center gap-3 rounded-3xl border border-neutral-200 bg-white transition-colors hover:border-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 xl:size-[167px]"
               >
                 <span className="flex size-[60px] items-center justify-center rounded-full bg-secondary-400 text-neutral-950">
                   <Icon aria-hidden="true" width={36} height={36} />

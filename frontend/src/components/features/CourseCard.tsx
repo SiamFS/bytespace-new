@@ -57,18 +57,19 @@ export function CourseCard({ course, variant = "default", className }: CourseCar
         className,
       )}
     >
-      <div className="relative h-[195px] overflow-hidden rounded-xl">
+      {/* @container: the meta badges tighten when the image is narrower than Figma's 341px. */}
+      <div className="@container relative h-[195px] overflow-hidden rounded-xl">
         <Image
           src={course.image}
           alt=""
           fill
-          sizes="(min-width: 1024px) 341px, (min-width: 640px) 50vw, 100vw"
+          sizes="(min-width: 1280px) 341px, (min-width: 768px) 50vw, 100vw"
           className="object-cover"
         />
-        <ul className={cn("absolute left-[13px] flex gap-3", v.badgeRow)}>
-          <li><Badge className={v.badge}>{course.lessons} Lessons</Badge></li>
-          <li><Badge className={v.badge}>{course.duration}</Badge></li>
-          <li><Badge className={v.badge}>{course.comments} Comments</Badge></li>
+        <ul className={cn("absolute left-2 flex gap-1.5 @min-[340px]:left-[13px] @min-[340px]:gap-3", v.badgeRow)}>
+          <li><Badge padding="fluid" className={v.badge}>{course.lessons} Lessons</Badge></li>
+          <li><Badge padding="fluid" className={v.badge}>{course.duration}</Badge></li>
+          <li><Badge padding="fluid" className={v.badge}>{course.comments} Comments</Badge></li>
         </ul>
       </div>
 

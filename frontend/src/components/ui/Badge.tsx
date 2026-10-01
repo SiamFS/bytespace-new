@@ -8,16 +8,25 @@ const tones = {
   neutral: "bg-neutral-50 text-neutral-700",
 };
 
-type BadgeProps = ComponentProps<"span"> & {
-  tone?: keyof typeof tones;
+const paddings = {
+  default: "px-3",
+  // Tighter inside an @container narrower than 340px (course images on phones and
+  // tablets); Figma's 12px from there up, so desktop cards stay exact.
+  fluid: "px-2 @min-[340px]:px-3",
 };
 
-/** Small non-interactive pill for metadata. */
-export function Badge({ tone = "surface", className, ...props }: BadgeProps) {
+type BadgeProps = ComponentProps<"span"> & {
+  tone?: keyof typeof tones;
+  padding?: keyof typeof paddings;
+};
+
+/** Small non-interactive pill for metadata. Always one line, as in Figma. */
+export function Badge({ tone = "surface", padding = "default", className, ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-3xl px-3 py-1.5 text-label-xs",
+        "inline-flex items-center gap-1 rounded-3xl py-1.5 text-label-xs whitespace-nowrap",
+        paddings[padding],
         tones[tone],
         className,
       )}

@@ -107,6 +107,8 @@ export function HeroSection() {
           sizes="(min-width: 640px) 480px, 360px"
           className="absolute bottom-0 left-1/2 w-[360px] max-w-none -translate-x-1/2 sm:w-[480px]"
         />
+        {/* One stat card over the photo, bottom-left like on desktop (more would crowd it). */}
+        <HappyStudentsCard className="absolute bottom-4 left-4 sm:bottom-8 sm:left-[calc(50%-280px)]" />
       </div>
     </section>
   );

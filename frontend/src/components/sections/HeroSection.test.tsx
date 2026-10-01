@@ -20,14 +20,15 @@ describe("HeroSection", () => {
     expect(screen.getByRole("search")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "Learning Progress" })).toBeInTheDocument();
     expect(screen.getByText("UI/UX Design")).toBeInTheDocument();
-    expect(screen.getByText("Happy Students")).toBeInTheDocument();
+    // Desktop stage + the mobile copy over the photo.
+    expect(screen.getAllByText("Happy Students")).toHaveLength(2);
   });
 
   it("describes the student photo and hides the decorative 3D shapes", () => {
     const { container } = render(<HeroSection />);
     expect(screen.getAllByAltText("Smiling student with headphones holding a laptop").length).toBeGreaterThan(0);
     const decorative = [...container.querySelectorAll("img")].filter((img) => img.getAttribute("alt") === "");
-    // 6 shapes + 7 avatars + 2 photo shadows (desktop + mobile photo)
-    expect(decorative).toHaveLength(15);
+    // 6 shapes + 2 × 7 avatars (desktop + mobile Happy Students) + 2 photo shadows
+    expect(decorative).toHaveLength(22);
   });
 });

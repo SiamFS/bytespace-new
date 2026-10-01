@@ -23,6 +23,17 @@ describe("CourseBrowser", () => {
     expect(within(grid).getAllByRole("article")).toHaveLength(6);
   });
 
+  it("on phones, hides cards after the third until 'Show all' is pressed", async () => {
+    const user = userEvent.setup();
+    render(<CourseBrowser />);
+    const items = Array.from(screen.getByRole("list", { name: "Courses" }).children);
+    expect(items.map((li) => li.classList.contains("hidden"))).toEqual([false, false, false, true, true, true]);
+
+    await user.click(screen.getByRole("button", { name: "Show all 6 courses" }));
+    expect(items.some((li) => li.classList.contains("hidden"))).toBe(false);
+    expect(screen.queryByRole("button", { name: "Show all 6 courses" })).not.toBeInTheDocument();
+  });
+
   it("filters the grid when a category is picked", async () => {
     const user = userEvent.setup();
     render(<CourseBrowser />);

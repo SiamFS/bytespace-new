@@ -31,13 +31,14 @@ const photoAlt = {
 /**
  * "Your Path to Professional Growth" + "Create & Manage Courses Easily" (one Figma frame:
  * #fafafa with soft blue/lime glows). On desktop, each visual is a fixed box with its
- * children at Figma offsets; below lg only the photo is shown (our responsive design).
+ * children at Figma offsets; below xl (1280px, where the 1200px layout fits) only the
+ * photo is shown (our responsive design).
  */
 export function GrowthSection() {
   return (
     <section
       aria-labelledby="growth-title"
-      className="relative isolate overflow-hidden bg-canvas py-20 lg:py-[120px]"
+      className="relative isolate overflow-hidden bg-canvas py-20 xl:py-[120px]"
     >
       {/* Glows at Figma coordinates (relative to the section's 1440px frame). */}
       <div aria-hidden="true" className="absolute inset-y-0 left-1/2 -z-10 w-[1440px] -translate-x-1/2">
@@ -48,10 +49,10 @@ export function GrowthSection() {
         <Glow color="secondary" size={672} left={-287} top={946} opacity={0.6} />
       </div>
 
-      <Container className="flex flex-col gap-20 lg:gap-[72px]">
+      <Container className="flex flex-col gap-20 xl:gap-[72px]">
         {/* Row 1 — Your Path to Professional Growth */}
-        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-[63px]">
-          <div className="flex flex-col gap-10 lg:w-[574px] lg:shrink-0">
+        <div className="flex flex-col items-center gap-12 xl:flex-row xl:gap-[63px]">
+          <div className="flex flex-col gap-10 xl:w-[574px] xl:shrink-0">
             <SectionHeading
               id="growth-title"
               align="left"
@@ -74,7 +75,7 @@ export function GrowthSection() {
           </div>
 
           <PhotoOnMobile src={student} alt={photoAlt.student} shadow="student" />
-          <div className="relative hidden h-[552px] w-[621px] shrink-0 lg:block">
+          <div className="relative hidden h-[552px] w-[621px] shrink-0 xl:block">
             <CourseCard course={courses[0]} variant="growth" className="absolute top-0 left-0 w-[373px]" />
             <PhotoWithShadow
               shadow="student"
@@ -94,9 +95,9 @@ export function GrowthSection() {
         </div>
 
         {/* Row 2 — Create & Manage Courses Easily */}
-        <div className="flex flex-col-reverse items-center gap-12 lg:flex-row lg:gap-[79px]">
+        <div className="flex flex-col-reverse items-center gap-12 xl:flex-row xl:gap-[79px]">
           <PhotoOnMobile src={creator} alt={photoAlt.creator} shadow="creator" />
-          <div className="relative hidden h-[596px] w-[541px] shrink-0 lg:block">
+          <div className="relative hidden h-[596px] w-[541px] shrink-0 xl:block">
             <RevenueCard className="absolute top-[44px] left-0" />
             <YearToDateCard className="absolute top-[194px] left-0" />
             <PhotoWithShadow
@@ -110,7 +111,7 @@ export function GrowthSection() {
             <Shape src={springALime} left={303} top={114} size={216} />
           </div>
 
-          <div className="flex flex-col gap-10 lg:w-[580px]">
+          <div className="flex flex-col gap-10 xl:w-[580px]">
             <SectionHeading
               align="left"
               tone="neutral"
@@ -151,7 +152,7 @@ function PhotoOnMobile({
       src={src}
       alt={alt}
       sizes="(min-width: 640px) 420px, 90vw"
-      className="relative w-full max-w-[420px] lg:hidden"
+      className="relative w-full max-w-[420px] xl:hidden"
     />
   );
 }
